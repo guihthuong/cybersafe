@@ -177,6 +177,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           msg = "Email này đã được đăng ký tài khoản. Vui lòng chọn Đăng nhập.";
         } else if (msg.includes("Password should be at least")) {
           msg = "Mật khẩu phải có độ dài ít nhất 6 ký tự.";
+        } else if (
+          msg.includes("email rate limit exceeded") ||
+          msg.includes("rate limit") ||
+          msg.includes("over_email_send_rate_limit")
+        ) {
+          msg = "Supabase bị chạm giới hạn gửi email xác nhận mặc định (3 thư/giờ). Bạn chỉ cần vào Supabase Dashboard -> Authentication -> Providers -> Email -> TẮT 'Confirm email' là đăng ký vào được ngay lập tức!";
         }
         return { success: false, error: msg };
       }
