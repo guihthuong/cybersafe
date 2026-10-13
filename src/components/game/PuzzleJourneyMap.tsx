@@ -43,7 +43,7 @@ export function PuzzleJourneyMap({
     AVATAR_OPTIONS.find((a) => a.id === avatarId) || AVATAR_OPTIONS[0];
 
   const ROW_HEIGHT = 160;
-  const totalHeight = Math.max(480, scenarios.length * ROW_HEIGHT + 100);
+  const totalHeight = Math.max(520, scenarios.length * ROW_HEIGHT + 150);
 
   // Compute (x, y) coordinates for each node
   // x is percentage (26% to 74%), y is pixels
@@ -52,7 +52,7 @@ export function PuzzleJourneyMap({
       const globalIdx = globalStartIndex + relIdx;
       // Oscillate horizontally between 30% and 70%
       const xPercent = relIdx % 2 === 0 ? 30 : 70;
-      const yPixels = relIdx * ROW_HEIGHT + 85;
+      const yPixels = relIdx * ROW_HEIGHT + 130;
 
       // ĐIỀU KIỆN MỞ KHÓA CHO TỪNG ĐỀ TÀI:
       // 1. Ải đầu tiên của đề tài (relIdx === 0) luôn luôn được mở để người học vào bất kỳ đề tài nào cũng rèn luyện được ngay!
