@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { CheckCircle2, AlertTriangle, ArrowRight, RotateCcw } from "lucide-react";
+import { CheckCircle2, AlertTriangle, ArrowRight, RotateCcw, PhoneCall } from "lucide-react";
 
 export function QuickMiniChallenge() {
   const [selectedAnswer, setSelectedAnswer] = useState<boolean | null>(null);
@@ -49,15 +49,8 @@ export function QuickMiniChallenge() {
         {/* Question Content */}
         <div className="space-y-6">
           <div className="p-5 sm:p-6 rounded-2xl bg-slate-50 border border-slate-200 text-slate-900 flex flex-col md:flex-row items-center gap-6">
-            <div className="relative w-24 h-24 sm:w-28 sm:h-28 shrink-0 flex items-center justify-center">
-              <div className="absolute inset-0 bg-sky-200/40 rounded-full blur-md animate-pulse-halo pointer-events-none" />
-              <div className="relative z-10 w-full h-full animate-pendulum hover-tilt flex items-center justify-center">
-                <img
-                  src="/images/fake police.png"
-                  alt="Mạo danh công quyền"
-                  className="w-full h-full object-contain drop-shadow-md select-none"
-                />
-              </div>
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-rose-100/80 border border-rose-200 text-rose-700 shrink-0 flex items-center justify-center shadow-xs">
+              <PhoneCall className="w-8 h-8 sm:w-10 sm:h-10 text-rose-600" />
             </div>
 
             <div className="space-y-1 flex-1">

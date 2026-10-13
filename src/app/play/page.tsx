@@ -194,40 +194,19 @@ export default function PlayPage() {
                 return (
                   <div
                     key={chapter.id}
-                    className="rounded-3xl bg-white border-2 border-slate-200 hover:border-sky-400 p-6 shadow-xs hover:shadow-lg transition-all flex flex-col justify-between space-y-5 group"
+                    className="rounded-3xl bg-white border border-slate-200 hover:border-slate-300 hover-lift p-6 shadow-xs flex flex-col justify-between space-y-5 transition-all group"
                   >
                     <div className="space-y-3">
-                      {/* Topic Illustration Preview */}
-                      {chapter.imageUrl && (
-                        <div className="relative h-36 bg-gradient-to-b from-slate-50 via-sky-50/30 to-white rounded-2xl flex items-center justify-center p-3 border border-slate-100 overflow-hidden group-hover:border-sky-300 transition-colors">
-                          <div className="absolute w-24 h-24 rounded-full bg-sky-200/40 blur-lg pointer-events-none group-hover:scale-125 transition-transform duration-500" />
-                          {(() => {
-                            const swayHoverClass =
-                              idx % 3 === 0
-                                ? "group-hover-sway"
-                                : idx % 3 === 1
-                                ? "group-hover-rock"
-                                : "group-hover-wobble";
-                            return (
-                              <div className={`relative z-10 w-24 h-24 ${swayHoverClass} transition-transform duration-300 flex items-center justify-center`}>
-                                <img
-                                  src={chapter.imageUrl}
-                                  alt={chapter.title}
-                                  className="w-full h-full object-contain drop-shadow-sm select-none group-hover:scale-105 transition-transform duration-300"
-                                  loading="lazy"
-                                />
-                              </div>
-                            );
-                          })()}
+                      {/* Topic Header: Code Pill, Scenario Count & Stars */}
+                      <div className="flex items-center justify-between gap-2 pb-1">
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono text-xs font-bold px-2.5 py-0.5 rounded-lg bg-sky-50 text-sky-800 border border-sky-200">
+                            {chapter.topicCode}
+                          </span>
+                          <span className="text-xs font-medium text-slate-500">
+                            {chapterScenarios.length} ải
+                          </span>
                         </div>
-                      )}
-
-                      {/* Topic Badge & Stars */}
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 border border-slate-200 text-slate-800 text-xs font-bold font-mono uppercase tracking-wider">
-                          <Flag className="w-3 h-3 text-sky-700" />
-                          <span>{chapter.topicCode}</span>
-                        </span>
 
                         <div className="flex items-center gap-1 text-xs font-bold text-amber-500">
                           <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
@@ -239,10 +218,10 @@ export default function PlayPage() {
 
                       {/* Title & Subtitle */}
                       <div>
-                        <h3 className="text-lg font-black text-slate-900 group-hover:text-sky-700 transition-colors leading-snug">
+                        <h3 className="text-lg font-bold text-slate-900 group-hover:text-sky-700 transition-colors leading-snug">
                           {chapter.title}
                         </h3>
-                        <p className="text-xs font-bold text-slate-500 mt-0.5">
+                        <p className="text-xs font-semibold text-slate-500 mt-0.5">
                           {chapter.subtitle}
                         </p>
                       </div>

@@ -13,8 +13,8 @@ export function Navbar() {
 
   const navLinks = [
     { href: "/", label: "Trang Chủ" },
-    { href: "/play", label: "Phòng Huấn Luyện", badge: "39 Tình huống" },
-    { href: "/chatbot", label: "Kiểm Tra Tin Nhắn", badge: "Radar AI" },
+    { href: "/play", label: "Phòng Huấn Luyện", badge: "39 Ải" },
+    { href: "/chatbot", label: "Kiểm Tra Tin Nhắn", badge: "Tư vấn" },
     { href: "/guide", label: "Cẩm Nang An Toàn" },
   ];
 

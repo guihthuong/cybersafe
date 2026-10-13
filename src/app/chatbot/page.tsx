@@ -114,42 +114,36 @@ export default function ChatbotPage() {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto space-y-6">
-        {/* Banner Header - Professional with Animated Cyber Guardian */}
-        <div className="p-6 rounded-3xl bg-white border border-slate-200 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-xs relative overflow-hidden">
-          <div className="flex items-center gap-4 z-10">
-            {/* Animated Cyber Shield Avatar */}
-            <div className="relative w-14 h-14 sm:w-16 sm:h-16 shrink-0 flex items-center justify-center">
-              <div className="absolute inset-0 bg-sky-200/50 rounded-2xl blur-md animate-pulse-halo pointer-events-none" />
-              <div className="relative z-10 w-full h-full animate-float-slow hover-tilt flex items-center justify-center p-1 bg-white rounded-2xl border border-slate-200 shadow-xs">
-                <img
-                  src="/images/cybersecurity.png"
-                  alt="CyberSafe Radar"
-                  className="w-full h-full object-contain drop-shadow-sm select-none"
-                />
-              </div>
+        {/* Banner Header - Human, Calm & Professional */}
+        <div className="p-6 rounded-3xl bg-white border border-slate-200 flex flex-col md:flex-row items-start md:items-center justify-between gap-5 shadow-xs">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-sky-50 border border-sky-200 text-sky-700 flex items-center justify-center shrink-0">
+              <ShieldCheck className="w-6 h-6" />
             </div>
 
             <div>
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                  Radar Phân Tích Nguy Cơ
+              <div className="flex flex-wrap items-center gap-2 mb-1">
+                <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700">
+                  Tư Vấn An Toàn Số
                 </span>
-                <span className="text-xs px-2.5 py-0.5 rounded-full bg-purple-50 text-purple-800 font-bold border border-purple-200 flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-purple-600 animate-pulse" />
-                  <span>Kiến Trúc Hybrid (Groq AI + Offline Fallback)</span>
+                <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
+                  Đối chiếu 39 quy tắc nhận diện
                 </span>
               </div>
-              <h1 className="text-xl sm:text-2xl font-black text-slate-900 mt-0.5">
-                Trợ Lý Tư Vấn Nhận Diện Lừa Đảo
+              <h1 className="text-xl sm:text-2xl font-bold text-slate-900">
+                Kiểm Tra Tin Nhắn & Đường Link Khả Nghi
               </h1>
+              <p className="text-xs sm:text-sm text-slate-600 font-medium mt-0.5">
+                Nhập nội dung tin nhắn, số điện thoại hoặc đường link để nhận khuyến nghị phòng tránh an toàn.
+              </p>
             </div>
           </div>
 
           <button
             onClick={handleResetChat}
-            className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs flex items-center gap-1.5 transition-colors cursor-pointer border border-slate-200 z-10"
+            className="px-3.5 py-2 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-700 font-semibold text-xs flex items-center gap-1.5 transition-colors cursor-pointer border border-slate-200 shrink-0"
           >
-            <RotateCcw className="w-3.5 h-3.5" /> Làm mới hội thoại
+            <RotateCcw className="w-3.5 h-3.5" /> Làm mới
           </button>
         </div>
 
@@ -218,21 +212,21 @@ export default function ChatbotPage() {
           ))}
 
           {isAnalyzing && (
-            <div className="flex gap-3 items-center p-3.5 rounded-2xl bg-slate-50 border border-slate-200 text-slate-700 text-xs font-semibold animate-pulse">
-              <div className="w-8 h-8 rounded-xl bg-purple-100 flex items-center justify-center text-purple-700 shrink-0">
+            <div className="flex gap-3 items-center p-3.5 rounded-2xl bg-slate-50 border border-slate-200 text-slate-700 text-xs font-medium">
+              <div className="w-8 h-8 rounded-xl bg-sky-100 flex items-center justify-center text-sky-700 shrink-0">
                 <Bot className="w-4 h-4 animate-spin" />
               </div>
               <div className="space-y-0.5">
                 <div className="flex items-center gap-2 text-slate-900 font-bold">
-                  <span>Trợ lý AI đang phân tích bối cảnh & đối chiếu quy tắc...</span>
+                  <span>Hệ thống đang đối chiếu dữ liệu nhận diện rủi ro...</span>
                   <span className="flex gap-1 items-center">
                     <span className="w-1.5 h-1.5 rounded-full bg-sky-600 animate-bounce" />
                     <span className="w-1.5 h-1.5 rounded-full bg-sky-600 animate-bounce [animation-delay:0.15s]" />
                     <span className="w-1.5 h-1.5 rounded-full bg-sky-600 animate-bounce [animation-delay:0.3s]" />
                   </span>
                 </div>
-                <p className="text-[11px] text-slate-500 font-normal">
-                  Đang bóc tách tâm lý hoảng loạn, lòng tham và dấu hiệu kỹ thuật
+                <p className="text-[11px] text-slate-500">
+                  Kiểm tra tính xác thực, đầu số gửi tin và các dấu hiệu bất thường
                 </p>
               </div>
             </div>

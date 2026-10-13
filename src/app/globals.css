@@ -131,129 +131,37 @@
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
 }
 
-/* Engaging Micro-animations: Visible Swaying, Pendulum, Wobble & Float */
-@keyframes pendulum-swing {
-  0% {
-    transform: rotate(-9deg);
+/* Modern, Subtle Micro-interactions */
+@keyframes subtle-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
   }
-  50% {
-    transform: rotate(9deg);
-  }
-  100% {
-    transform: rotate(-9deg);
-  }
-}
-
-@keyframes rock-sway {
-  0% {
-    transform: rotate(-7deg) scale(0.98);
-  }
-  50% {
-    transform: rotate(7deg) scale(1.02);
-  }
-  100% {
-    transform: rotate(-7deg) scale(0.98);
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
-@keyframes lively-wobble {
-  0%, 100% {
-    transform: rotate(-5deg) translateY(-2px);
-  }
-  25% {
-    transform: rotate(5deg) translateY(2px);
-  }
-  50% {
-    transform: rotate(-4deg) translateY(1px);
-  }
-  75% {
-    transform: rotate(6deg) translateY(-1px);
-  }
+.animate-fade-in {
+  animation: subtle-fade-in 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-@keyframes float-slow {
-  0%, 100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-8px);
-  }
+/* Card Subtle Elevation on Hover */
+.hover-lift {
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.08), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
 }
 
-@keyframes float-reverse {
-  0%, 100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(8px);
-  }
+/* Subtle Interactive Press */
+.btn-press {
+  transition: transform 0.1s ease, background-color 0.15s ease;
 }
-
-@keyframes pulse-halo {
-  0%, 100% {
-    opacity: 0.6;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.95;
-    transform: scale(1.08);
-  }
-}
-
-/* Lively Sway / Rock Utilities */
-.animate-pendulum {
-  animation: pendulum-swing 3.2s cubic-bezier(0.445, 0.05, 0.55, 0.95) infinite;
-  transform-origin: top center;
-}
-
-.animate-rock-sway {
-  animation: rock-sway 3.6s ease-in-out infinite;
-  transform-origin: bottom center;
-}
-
-.animate-wobble {
-  animation: lively-wobble 3.4s ease-in-out infinite;
-  transform-origin: center center;
-}
-
-.animate-sway-gentle {
-  animation: pendulum-swing 3.8s ease-in-out infinite;
-  transform-origin: top center;
-}
-
-.animate-float-slow {
-  animation: float-slow 4s ease-in-out infinite;
-}
-
-.animate-float-reverse {
-  animation: float-reverse 4.5s ease-in-out infinite;
-}
-
-.animate-pulse-halo {
-  animation: pulse-halo 3s ease-in-out infinite;
-}
-
-/* Interactive card image hover: wobbles faster on hover! */
-.hover-tilt {
-  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.35s ease;
-}
-.hover-tilt:hover {
-  transform: translateY(-4px) scale(1.08) rotate(4deg);
-}
-
-/* Controlled Hover-Triggered Animations for Grid Cards */
-/* At rest: completely stationary, clean, and elegant. On hover: sways/rocks playfully! */
-.group:hover .group-hover-sway {
-  animation: pendulum-swing 2s ease-in-out infinite;
-  transform-origin: top center;
-}
-.group:hover .group-hover-rock {
-  animation: rock-sway 2s ease-in-out infinite;
-  transform-origin: bottom center;
-}
-.group:hover .group-hover-wobble {
-  animation: lively-wobble 1.8s ease-in-out infinite;
-  transform-origin: center center;
+.btn-press:active {
+  transform: scale(0.98);
 }
 
 
