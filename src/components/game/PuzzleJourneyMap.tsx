@@ -23,6 +23,7 @@ interface PuzzleJourneyMapProps {
   chapterTitle?: string;
   chapterBadge?: string;
   chapterDescription?: string;
+  chapterImageUrl?: string;
 }
 
 export function PuzzleJourneyMap({
@@ -36,6 +37,7 @@ export function PuzzleJourneyMap({
   chapterTitle,
   chapterBadge,
   chapterDescription,
+  chapterImageUrl,
 }: PuzzleJourneyMapProps) {
   const currentAvatar =
     AVATAR_OPTIONS.find((a) => a.id === avatarId) || AVATAR_OPTIONS[0];
@@ -77,18 +79,34 @@ export function PuzzleJourneyMap({
     <div className="relative w-full max-w-2xl mx-auto py-6 px-4">
       {/* Optional Chapter Header Landmark */}
       {chapterTitle && (
-        <div className="mb-8 p-6 rounded-3xl bg-white border-2 border-slate-200 shadow-sm text-center relative overflow-hidden">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 border border-slate-200 text-slate-700 text-xs font-bold font-mono uppercase tracking-wider mb-2">
-            <Flag className="w-3.5 h-3.5 text-sky-700" />
-            <span>{chapterBadge || "Chặng Hành Trình"}</span>
+        <div className="mb-8 p-6 rounded-3xl bg-white border-2 border-slate-200 shadow-sm relative overflow-hidden flex flex-col sm:flex-row items-center justify-between gap-6">
+          <div className="space-y-2 text-center sm:text-left flex-1">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 border border-slate-200 text-slate-700 text-xs font-bold font-mono uppercase tracking-wider">
+              <Flag className="w-3.5 h-3.5 text-sky-700" />
+              <span>{chapterBadge || "Chặng Hành Trình"}</span>
+            </div>
+            <h3 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+              {chapterTitle}
+            </h3>
+            {chapterDescription && (
+              <p className="text-xs sm:text-sm text-slate-600 font-medium leading-relaxed max-w-md">
+                {chapterDescription}
+              </p>
+            )}
           </div>
-          <h3 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-            {chapterTitle}
-          </h3>
-          {chapterDescription && (
-            <p className="text-xs sm:text-sm text-slate-600 font-medium mt-1.5 max-w-lg mx-auto leading-relaxed">
-              {chapterDescription}
-            </p>
+
+          {/* Illustrated Chapter Landmark with Swaying Animation */}
+          {chapterImageUrl && (
+            <div className="relative w-28 h-28 sm:w-32 sm:h-32 shrink-0 flex items-center justify-center">
+              <div className="absolute inset-0 bg-sky-200/40 rounded-full blur-xl animate-pulse-halo pointer-events-none" />
+              <div className="relative z-10 w-full h-full animate-sway-gentle hover-tilt flex items-center justify-center">
+                <img
+                  src={chapterImageUrl}
+                  alt={chapterTitle}
+                  className="w-full h-full object-contain drop-shadow-md select-none"
+                />
+              </div>
+            </div>
           )}
         </div>
       )}
@@ -265,6 +283,63 @@ export function PuzzleJourneyMap({
                   {node.scenario.scenario_id} • {node.scenario.category_name_vi}
                 </span>
               </div>
+            </div>
+          );
+        })}
+
+        {/* ROADSIDE DECORATIVE LANDMARKS & ILLUSTRATIONS */}
+        {nodes.map((node) => {
+          let roadsideArt: { image: string; label: string; anim: string } | null = null;
+          const isRightSideEmpty = node.relIdx % 2 === 0;
+          const xLandmark = isRightSideEmpty ? 82 : 18;
+
+          if (node.relIdx === 0) {
+            roadsideArt = {
+              image: "/images/stealing OTP.png",
+              label: "Cảnh Giác OTP",
+              anim: "animate-float-slow",
+            };
+          } else if (node.relIdx === 1) {
+            roadsideArt = {
+              image: "/images/hacker.png",
+              label: "Vùng Nguy Cơ",
+              anim: "animate-sway-gentle",
+            };
+          } else if (node.relIdx === 2) {
+            roadsideArt = {
+              image: "/images/qr scam.png",
+              label: "Bẫy Quét QR",
+              anim: "animate-float-reverse",
+            };
+          } else if (node.relIdx === 3) {
+            roadsideArt = {
+              image: "/images/falling stock chart scam.png",
+              label: "Sàn Ảo Đáy",
+              anim: "animate-float-slow",
+            };
+          }
+
+          if (!roadsideArt) return null;
+
+          return (
+            <div
+              key={`roadside_${node.scenario.scenario_id}`}
+              className="hidden sm:flex absolute z-5 -translate-x-1/2 -translate-y-1/2 flex-col items-center pointer-events-none select-none"
+              style={{
+                left: `${xLandmark}%`,
+                top: `${node.yPixels}px`,
+              }}
+            >
+              <div className={`w-16 h-16 sm:w-20 sm:h-20 ${roadsideArt.anim} hover-tilt flex items-center justify-center opacity-90`}>
+                <img
+                  src={roadsideArt.image}
+                  alt={roadsideArt.label}
+                  className="w-full h-full object-contain drop-shadow-md"
+                />
+              </div>
+              <span className="text-[10px] font-bold text-slate-600 bg-white/90 backdrop-blur-xs px-2.5 py-0.5 rounded-full border border-slate-200 shadow-xs mt-1">
+                {roadsideArt.label}
+              </span>
             </div>
           );
         })}

@@ -197,6 +197,21 @@ export default function PlayPage() {
                     className="rounded-3xl bg-white border-2 border-slate-200 hover:border-sky-400 p-6 shadow-xs hover:shadow-lg transition-all flex flex-col justify-between space-y-5 group"
                   >
                     <div className="space-y-3">
+                      {/* Topic Illustration Preview */}
+                      {chapter.imageUrl && (
+                        <div className="relative h-36 bg-gradient-to-b from-slate-50 via-sky-50/30 to-white rounded-2xl flex items-center justify-center p-3 border border-slate-100 overflow-hidden group-hover:border-sky-300 transition-colors">
+                          <div className="absolute w-24 h-24 rounded-full bg-sky-200/40 blur-lg pointer-events-none group-hover:scale-125 transition-transform duration-500" />
+                          <div className="relative z-10 w-24 h-24 hover-tilt flex items-center justify-center">
+                            <img
+                              src={chapter.imageUrl}
+                              alt={chapter.title}
+                              className="w-full h-full object-contain drop-shadow-sm select-none group-hover:scale-110 transition-transform duration-300"
+                              loading="lazy"
+                            />
+                          </div>
+                        </div>
+                      )}
+
                       {/* Topic Badge & Stars */}
                       <div className="flex items-center justify-between gap-2">
                         <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 border border-slate-200 text-slate-800 text-xs font-bold font-mono uppercase tracking-wider">
@@ -223,7 +238,7 @@ export default function PlayPage() {
                       </div>
 
                       {/* Description */}
-                      <p className="text-xs text-slate-600 line-clamp-3 leading-relaxed font-medium">
+                      <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed font-medium">
                         {chapter.description}
                       </p>
                     </div>

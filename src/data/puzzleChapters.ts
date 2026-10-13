@@ -10,6 +10,7 @@ export interface PuzzleChapter {
   themeGradient: string;
   borderColor: string;
   landmarkName: string;
+  imageUrl: string;
 }
 
 export const PUZZLE_CHAPTERS: PuzzleChapter[] = [
@@ -25,6 +26,7 @@ export const PUZZLE_CHAPTERS: PuzzleChapter[] = [
     themeGradient: "from-sky-700 to-indigo-900",
     borderColor: "border-sky-300",
     landmarkName: "Cổng Pháo Đài Công Quyền",
+    imageUrl: "/images/fake police.png",
   },
   {
     id: "chuong-2",
@@ -38,6 +40,7 @@ export const PUZZLE_CHAPTERS: PuzzleChapter[] = [
     themeGradient: "from-cyan-700 to-blue-900",
     borderColor: "border-cyan-300",
     landmarkName: "Tháp Bảo Mật Tài Khoản",
+    imageUrl: "/images/fake mobile banking.png",
   },
   {
     id: "chuong-3",
@@ -51,6 +54,7 @@ export const PUZZLE_CHAPTERS: PuzzleChapter[] = [
     themeGradient: "from-amber-600 to-orange-800",
     borderColor: "border-amber-300",
     landmarkName: "Thung Lũng Việc Làm Ảo",
+    imageUrl: "/images/fake job scam trap.png",
   },
   {
     id: "chuong-4",
@@ -64,6 +68,7 @@ export const PUZZLE_CHAPTERS: PuzzleChapter[] = [
     themeGradient: "from-purple-700 to-pink-900",
     borderColor: "border-purple-300",
     landmarkName: "Cầu Kính Ảo Giác AI",
+    imageUrl: "/images/imposter wearing face mask phone call.png",
   },
   {
     id: "chuong-5",
@@ -77,6 +82,7 @@ export const PUZZLE_CHAPTERS: PuzzleChapter[] = [
     themeGradient: "from-rose-600 to-pink-800",
     borderColor: "border-rose-300",
     landmarkName: "Vườn Hồng Bẫy Đầu Tư",
+    imageUrl: "/images/falling stock chart scam.png",
   },
   {
     id: "chuong-6",
@@ -90,6 +96,7 @@ export const PUZZLE_CHAPTERS: PuzzleChapter[] = [
     themeGradient: "from-red-700 to-slate-900",
     borderColor: "border-red-300",
     landmarkName: "Căn Cứ Phòng Chống Mã Độc",
+    imageUrl: "/images/hacker.png",
   },
   {
     id: "chuong-7",
@@ -103,6 +110,7 @@ export const PUZZLE_CHAPTERS: PuzzleChapter[] = [
     themeGradient: "from-emerald-600 to-teal-800",
     borderColor: "border-emerald-300",
     landmarkName: "Chợ Thương Mại Điện Tử",
+    imageUrl: "/images/fake lottery prize trap.png",
   },
   {
     id: "chuong-8",
@@ -116,6 +124,7 @@ export const PUZZLE_CHAPTERS: PuzzleChapter[] = [
     themeGradient: "from-blue-700 to-slate-900",
     borderColor: "border-blue-300",
     landmarkName: "Trung Tâm Dịch Vụ Công",
+    imageUrl: "/images/false rumor fake news.png",
   },
   {
     id: "chuong-9",
@@ -129,6 +138,7 @@ export const PUZZLE_CHAPTERS: PuzzleChapter[] = [
     themeGradient: "from-teal-600 to-emerald-900",
     borderColor: "border-teal-300",
     landmarkName: "Quảng Trường Thiện Nguyện",
+    imageUrl: "/images/qr scam.png",
   },
   {
     id: "chuong-10",
@@ -142,6 +152,7 @@ export const PUZZLE_CHAPTERS: PuzzleChapter[] = [
     themeGradient: "from-indigo-600 to-violet-900",
     borderColor: "border-indigo-300",
     landmarkName: "Mạng Lưới Kết Nối Số",
+    imageUrl: "/images/hacker stealing social media profile.png",
   },
   {
     id: "chuong-11",
@@ -155,6 +166,7 @@ export const PUZZLE_CHAPTERS: PuzzleChapter[] = [
     themeGradient: "from-sky-600 to-cyan-900",
     borderColor: "border-sky-300",
     landmarkName: "Cửa Sân Bay & Lữ Hành",
+    imageUrl: "/images/romance scam.png",
   },
   {
     id: "chuong-12",
@@ -168,5 +180,6 @@ export const PUZZLE_CHAPTERS: PuzzleChapter[] = [
     themeGradient: "from-slate-700 to-slate-900",
     borderColor: "border-slate-300",
     landmarkName: "Trạm Thử Nghiệm Đối Chứng",
+    imageUrl: "/images/cybersecurity.png",
   },
 ];

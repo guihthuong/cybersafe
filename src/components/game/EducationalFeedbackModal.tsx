@@ -93,6 +93,36 @@ export function EducationalFeedbackModal({
           </button>
         </div>
 
+        {/* Contextual Visual Feedback Card */}
+        <div className={`p-4 sm:p-5 rounded-2xl border-2 flex items-center justify-between gap-4 ${
+          passedSafely ? "bg-emerald-50/60 border-emerald-200" : "bg-rose-50/60 border-rose-200"
+        }`}>
+          <div className="space-y-1">
+            <span className={`text-[11px] font-black uppercase tracking-wider ${
+              passedSafely ? "text-emerald-800" : "text-rose-800"
+            }`}>
+              {passedSafely ? "Phản Xạ Tự Vệ Số Xuất Sắc" : "Cảnh Báo Thủ Đoạn Tinh Vi"}
+            </span>
+            <p className="text-xs sm:text-sm font-semibold text-slate-800 leading-snug">
+              {passedSafely
+                ? "Bạn đã nhận diện chính xác dấu hiệu bất thường và bảo vệ tài sản số thành công!"
+                : "Thủ đoạn lừa đảo này rất dễ khiến nạn nhân mất bình tĩnh. Hãy cùng phân tích các điểm đáng ngờ dưới đây."}
+            </p>
+          </div>
+
+          <div className="relative w-20 h-20 sm:w-24 sm:h-24 shrink-0 flex items-center justify-center">
+            <div className={`w-full h-full hover-tilt flex items-center justify-center ${
+              passedSafely ? "animate-float-slow" : "animate-sway-gentle"
+            }`}>
+              <img
+                src={passedSafely ? "/images/cybersecurity.png" : "/images/stealing OTP.png"}
+                alt={passedSafely ? "Bảo vệ an toàn" : "Nguy cơ chiếm đoạt"}
+                className="w-full h-full object-contain drop-shadow-sm select-none"
+              />
+            </div>
+          </div>
+        </div>
+
         {/* Cảnh báo nghiêm ngặt nếu chưa an toàn */}
         {!passedSafely && (
           <div className="p-4 rounded-2xl bg-rose-50 border-2 border-rose-200 text-rose-950 space-y-1">

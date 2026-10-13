@@ -191,6 +191,7 @@ export default function ChapterPage({ params }: ChapterPageProps) {
           chapterTitle={chapter.subtitle}
           chapterBadge={chapter.badgeLabel}
           chapterDescription={chapter.description}
+          chapterImageUrl={chapter.imageUrl}
         />
 
         {/* Chapter Completion Victory Card */}
