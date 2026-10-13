@@ -56,9 +56,9 @@ export default function ChatbotPage() {
     },
   ];
 
-  const handleSend = (textToSend?: string) => {
+  const handleSend = async (textToSend?: string) => {
     const query = textToSend || input;
-    if (!query.trim()) return;
+    if (!query.trim() || isAnalyzing) return;
 
     const userMsgId = `user_${Date.now()}`;
     const newUserMsg: ChatMessage = {
@@ -72,8 +72,8 @@ export default function ChatbotPage() {
     setInput("");
     setIsAnalyzing(true);
 
-    setTimeout(() => {
-      const result = analyzeRisk(query);
+    try {
+      const result = await analyzeRisk(query);
       const botMsgId = `bot_${Date.now()}`;
       const newBotMsg: ChatMessage = {
         id: botMsgId,
@@ -84,7 +84,6 @@ export default function ChatbotPage() {
       };
 
       setMessages((prev) => [...prev, newBotMsg]);
-      setIsAnalyzing(false);
 
       // Lưu kết quả tư vấn lên Supabase Cloud
       saveChatbotConsultation({
@@ -94,10 +93,12 @@ export default function ChatbotPage() {
         analysisSummary: result.summary,
         detectedFlags: result.detected_red_flags,
       });
-    }, 400);
+    } catch (err) {
+      console.error("Lỗi khi phân tích rủi ro:", err);
+    } finally {
+      setIsAnalyzing(false);
+    }
   };
-
-
 
   const handleResetChat = () => {
     setMessages([
@@ -124,8 +125,9 @@ export default function ChatbotPage() {
                 <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
                   Radar Phân Tích Nguy Cơ
                 </span>
-                <span className="text-xs px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 font-semibold border border-slate-200">
-                  Offline Ready
+                <span className="text-xs px-2.5 py-0.5 rounded-full bg-purple-50 text-purple-800 font-bold border border-purple-200 flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-purple-600 animate-pulse" />
+                  <span>Kiến Trúc Hybrid (Groq AI + Offline Fallback)</span>
                 </span>
               </div>
               <h1 className="text-xl sm:text-2xl font-black text-slate-900">
@@ -141,6 +143,7 @@ export default function ChatbotPage() {
             <RotateCcw className="w-3.5 h-3.5" /> Làm mới hội thoại
           </button>
         </div>
+
 
         {/* STATIC PRIVACY WARNING BANNER */}
         <div className="p-3.5 rounded-2xl bg-slate-100 border border-slate-300 text-slate-700 flex items-center gap-2.5 text-xs font-semibold shadow-xs">
@@ -206,14 +209,27 @@ export default function ChatbotPage() {
           ))}
 
           {isAnalyzing && (
-            <div className="flex gap-2.5 items-center text-slate-500 text-xs font-semibold">
-              <div className="w-6 h-6 rounded-lg bg-slate-100 flex items-center justify-center">
-                <Bot className="w-4 h-4 text-sky-600 animate-spin" />
+            <div className="flex gap-3 items-center p-3.5 rounded-2xl bg-slate-50 border border-slate-200 text-slate-700 text-xs font-semibold animate-pulse">
+              <div className="w-8 h-8 rounded-xl bg-purple-100 flex items-center justify-center text-purple-700 shrink-0">
+                <Bot className="w-4 h-4 animate-spin" />
               </div>
-              <span>Hệ thống đang đối chiếu và phân tích các dấu hiệu rủi ro...</span>
+              <div className="space-y-0.5">
+                <div className="flex items-center gap-2 text-slate-900 font-bold">
+                  <span>Trợ lý AI đang phân tích bối cảnh & đối chiếu quy tắc...</span>
+                  <span className="flex gap-1 items-center">
+                    <span className="w-1.5 h-1.5 rounded-full bg-sky-600 animate-bounce" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-sky-600 animate-bounce [animation-delay:0.15s]" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-sky-600 animate-bounce [animation-delay:0.3s]" />
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-500 font-normal">
+                  Đang bóc tách tâm lý hoảng loạn, lòng tham và dấu hiệu kỹ thuật
+                </p>
+              </div>
             </div>
           )}
         </div>
+
 
         {/* Quick Sample Prompts Chips */}
         <div className="space-y-2">

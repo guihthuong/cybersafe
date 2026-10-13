@@ -69,13 +69,26 @@ export function RiskAnalysisCard({ analysis }: RiskAnalysisCardProps) {
             <IconComponent className={`w-6 h-6 ${config.iconColor}`} />
           </div>
           <div>
-            <span className={`text-xs uppercase font-extrabold px-2.5 py-0.5 rounded-full border tracking-wide inline-block mb-1 ${config.badgeBg}`}>
-              {config.label}
-            </span>
+            <div className="flex flex-wrap items-center gap-2 mb-1">
+              <span className={`text-xs uppercase font-extrabold px-2.5 py-0.5 rounded-full border tracking-wide inline-block ${config.badgeBg}`}>
+                {config.label}
+              </span>
+              {analysis.analysis_source === "ai_groq" ? (
+                <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-purple-50 text-purple-800 border border-purple-200 flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-purple-600 animate-pulse" />
+                  <span>AI Chuyên Sâu (Groq Llama 3.3)</span>
+                </span>
+              ) : (
+                <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200 flex items-center gap-1">
+                  <span>Quy Tắc Khoa Học (Offline Engine)</span>
+                </span>
+              )}
+            </div>
             <h3 className="text-base sm:text-lg font-bold text-slate-900 leading-snug">
               {cleanTitle}
             </h3>
           </div>
+
         </div>
 
         {/* Risk Score Gauge */}

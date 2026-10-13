@@ -108,7 +108,9 @@ export interface RiskAnalysisResult {
   detected_red_flags: string[];
   immediate_recommendations: string[];
   safe_verification_steps: string[];
+  analysis_source?: "ai_groq" | "offline_rules";
 }
+
 
 export interface PlayerProfile {
   name: string;

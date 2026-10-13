@@ -5,13 +5,13 @@ export interface ScamSignalRule {
   category: string;
   name: string;
   regex: RegExp;
-  weight: number; // Điểm trọng số nguy cơ (10 - 40)
+  weight: number;
   advice: string;
 }
 
 // Bộ từ khóa & Regex nhận diện các dấu hiệu lừa đảo phổ biến tại Việt Nam
-const SCAM_RULES: ScamSignalRule[] = [
-  // 1. Dấu hiệu khẩn cấp đe dọa tính mạng / viện phí cấp cứu (Tâm lý hoảng loạn cực độ)
+export const SCAM_RULES: ScamSignalRule[] = [
+  // 1. Dấu hiệu khẩn cấp đe dọa tính mạng / viện phí cấp cứu
   {
     id: "emergency_hospital",
     category: "Gây sốc tâm lý",
@@ -107,9 +107,10 @@ const SCAM_RULES: ScamSignalRule[] = [
 ];
 
 /**
- * Hàm phân tích mức độ rủi ro dựa trên văn bản hoặc đường dẫn nhập vào
+ * Thuật toán Rule-based Regex dự phòng (Offline Fallback Engine)
+ * Đảm bảo hệ thống luôn phân tích được ngay cả khi rớt mạng hoặc không có API key.
  */
-export function analyzeRisk(input: string): RiskAnalysisResult {
+export function analyzeRiskRuleBased(input: string): RiskAnalysisResult {
   const trimmed = input.trim();
   if (!trimmed) {
     return {
@@ -124,6 +125,7 @@ export function analyzeRisk(input: string): RiskAnalysisResult {
       safe_verification_steps: [
         "Nguyên tắc vàng: Luôn bình tĩnh, không vội vàng làm theo bất kỳ chỉ dẫn nào."
       ],
+      analysis_source: "offline_rules",
     };
   }
 
@@ -187,5 +189,43 @@ export function analyzeRisk(input: string): RiskAnalysisResult {
       "Luôn giữ thói quen bảo mật hai lớp và kiểm tra tính xác thực của nguồn tin."
     ],
     safe_verification_steps: safeVerificationSteps,
+    analysis_source: "offline_rules",
   };
+}
+
+/**
+ * Hàm phân tích rủi ro HYBRID (AI LLM + Offline Fallback)
+ * 1. Gọi Next.js API /api/analyze-risk (tích hợp Groq Llama 3.3 siêu tốc).
+ * 2. Nếu rớt mạng, mất kết nối, hoặc chưa cấu hình API key -> tự động fallback sang Rule-based Regex.
+ * Đảm bảo an toàn 100%, không bao giờ crash ứng dụng.
+ */
+export async function analyzeRisk(input: string): Promise<RiskAnalysisResult> {
+  const trimmed = input.trim();
+  if (!trimmed) {
+    return analyzeRiskRuleBased(input);
+  }
+
+  try {
+    const res = await fetch("/api/analyze-risk", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text: trimmed }),
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      if (data.success && data.result) {
+        return {
+          ...data.result,
+          analysis_source: "ai_groq",
+        };
+      }
+    }
+
+    console.warn("API AI phản hồi không hợp lệ hoặc kích hoạt fallback. Đang chuyển sang Rule-based engine.");
+    return analyzeRiskRuleBased(trimmed);
+  } catch (err) {
+    console.warn("Lỗi mạng khi gọi LLM API, tự động kích hoạt Offline Fallback Regex:", err);
+    return analyzeRiskRuleBased(trimmed);
+  }
 }
