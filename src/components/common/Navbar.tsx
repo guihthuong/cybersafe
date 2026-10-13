@@ -99,13 +99,6 @@ export function Navbar() {
                 <span>Đăng Nhập</span>
               </button>
             )}
-
-            <Link
-              href="/play"
-              className="px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs sm:text-sm shadow-xs transition-all cursor-pointer"
-            >
-              <span>Vào Luyện Tập</span>
-            </Link>
           </div>
 
           {/* Mobile Hamburger Toggle Button */}

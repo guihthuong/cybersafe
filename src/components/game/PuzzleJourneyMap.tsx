@@ -9,7 +9,6 @@ import {
   Star,
   Play,
   Shield,
-  Flag,
 } from "lucide-react";
 
 interface PuzzleJourneyMapProps {
@@ -20,10 +19,6 @@ interface PuzzleJourneyMapProps {
   avatarId: string;
   onSelectLevel: (levelIndex: number) => void;
   globalStartIndex?: number; // 0-indexed offset if rendering a sub-chapter
-  chapterTitle?: string;
-  chapterBadge?: string;
-  chapterDescription?: string;
-  chapterImageUrl?: string;
 }
 
 export function PuzzleJourneyMap({
@@ -34,10 +29,6 @@ export function PuzzleJourneyMap({
   avatarId,
   onSelectLevel,
   globalStartIndex = 0,
-  chapterTitle,
-  chapterBadge,
-  chapterDescription,
-  chapterImageUrl,
 }: PuzzleJourneyMapProps) {
   const currentAvatar =
     AVATAR_OPTIONS.find((a) => a.id === avatarId) || AVATAR_OPTIONS[0];
@@ -94,40 +85,6 @@ export function PuzzleJourneyMap({
 
   return (
     <div className="relative w-full max-w-2xl mx-auto py-4 sm:py-6 px-2 sm:px-4">
-      {/* Optional Chapter Header Landmark */}
-      {chapterTitle && (
-        <div className="mb-6 sm:mb-8 p-4 sm:p-6 rounded-3xl bg-white border-2 border-slate-200 shadow-sm relative overflow-hidden flex flex-col sm:flex-row items-center justify-between gap-4 sm:gap-6">
-          <div className="space-y-2 text-center sm:text-left flex-1">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 border border-slate-200 text-slate-700 text-xs font-bold font-mono uppercase tracking-wider">
-              <Flag className="w-3.5 h-3.5 text-sky-700" />
-              <span>{chapterBadge || "Chặng Hành Trình"}</span>
-            </div>
-            <h3 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-              {chapterTitle}
-            </h3>
-            {chapterDescription && (
-              <p className="text-xs sm:text-sm text-slate-600 font-medium leading-relaxed max-w-md">
-                {chapterDescription}
-              </p>
-            )}
-          </div>
-
-          {/* Illustrated Chapter Landmark with Pendulum Swaying Animation */}
-          {chapterImageUrl && (
-            <div className="relative w-28 h-28 sm:w-32 sm:h-32 shrink-0 flex items-center justify-center">
-              <div className="absolute inset-0 bg-sky-200/40 rounded-full blur-xl animate-pulse-halo pointer-events-none" />
-              <div className="relative z-10 w-full h-full animate-pendulum hover-tilt flex items-center justify-center">
-                <img
-                  src={chapterImageUrl}
-                  alt={chapterTitle}
-                  className="w-full h-full object-contain drop-shadow-md select-none"
-                />
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
       {/* Main Map Trail Container */}
       <div
         className="relative w-full rounded-3xl bg-gradient-to-b from-sky-50/50 via-slate-50 to-emerald-50/50 border-2 border-slate-200 shadow-inner overflow-hidden"
