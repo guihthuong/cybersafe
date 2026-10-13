@@ -192,23 +192,62 @@ export async function saveUserProgressToSupabase(progress: {
   score: number;
   passedSafely: boolean;
   attempts?: number;
+  userId?: string;
 }) {
   if (!isSupabaseConfigured || !supabase) return;
 
   try {
-    const { error } = await supabase.from("user_progress").insert({
+    const payload: any = {
       scenario_id: progress.scenarioId,
       score: progress.score,
       passed_safely: progress.passedSafely,
       attempts: progress.attempts || 1,
       completed_at: new Date().toISOString(),
-    });
+    };
+    if (progress.userId) {
+      payload.user_id = progress.userId;
+    }
+
+    const { error } = await supabase.from("user_progress").insert(payload);
 
     if (error) {
       console.warn("Lỗi lưu tiến độ lên Supabase:", error.message);
     }
   } catch (err) {
     console.warn("Không thể đồng bộ tiến độ lên Supabase:", err);
+  }
+}
+
+/**
+ * Đồng bộ hoặc cập nhật thông tin hồ sơ người chơi lên bảng user_profiles
+ */
+export async function syncUserProfileToSupabase(profileData: {
+  id: string;
+  displayName: string;
+  targetGroup?: "student" | "elder" | "general";
+  totalScore?: number;
+  badges?: any[];
+}) {
+  if (!isSupabaseConfigured || !supabase) return;
+
+  try {
+    const { error } = await supabase.from("user_profiles").upsert(
+      {
+        id: profileData.id,
+        display_name: profileData.displayName,
+        target_group: profileData.targetGroup || "general",
+        total_score: profileData.totalScore || 0,
+        badges: profileData.badges || [],
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "id" }
+    );
+
+    if (error) {
+      console.warn("Lỗi lưu hồ sơ user_profiles lên Supabase:", error.message);
+    }
+  } catch (err) {
+    console.warn("Không thể gửi hồ sơ lên Supabase:", err);
   }
 }
 

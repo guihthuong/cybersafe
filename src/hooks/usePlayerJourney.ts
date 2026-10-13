@@ -3,10 +3,28 @@
 import { useState, useEffect, useCallback } from "react";
 import { PlayerProfile, LevelProgress } from "@/types/scenario";
 import { AVATAR_OPTIONS } from "@/data/avatars";
-import { saveUserProgressToSupabase } from "@/lib/supabase";
-
+import { saveUserProgressToSupabase, syncUserProfileToSupabase } from "@/lib/supabase";
 
 const JOURNEY_STORAGE_KEY = "cybersafe_quest_player_journey_v2";
+const PLAYER_UUID_KEY = "cybersafe_player_uuid_v1";
+
+function getOrCreatePlayerId(): string {
+  if (typeof window === "undefined") return "00000000-0000-0000-0000-000000000001";
+  try {
+    let pid = localStorage.getItem(PLAYER_UUID_KEY);
+    if (!pid) {
+      pid = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+        const r = (Math.random() * 16) | 0;
+        const v = c === "x" ? r : (r & 0x3) | 0x8;
+        return v.toString(16);
+      });
+      localStorage.setItem(PLAYER_UUID_KEY, pid);
+    }
+    return pid;
+  } catch {
+    return "00000000-0000-0000-0000-000000000001";
+  }
+}
 
 const DEFAULT_PROFILE: PlayerProfile = {
   name: "Nguyễn Anh Đức",
@@ -25,20 +43,37 @@ export function usePlayerJourney() {
   const [isJuryUnlockedAll, setIsJuryUnlockedAll] = useState<boolean>(false);
   const [isLoaded, setIsLoaded] = useState<boolean>(false);
 
-  // Load from localStorage on mount
+  // Load from localStorage on mount & initial sync to Supabase
   useEffect(() => {
     if (typeof window === "undefined") return;
     try {
+      const pid = getOrCreatePlayerId();
       const saved = localStorage.getItem(JOURNEY_STORAGE_KEY);
+      let curProfile = DEFAULT_PROFILE;
+      let curXp = 0;
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (parsed.profile) setProfile(parsed.profile);
+        if (parsed.profile) {
+          curProfile = parsed.profile;
+          setProfile(parsed.profile);
+        }
         if (typeof parsed.unlockedLevelIndex === "number") setUnlockedLevelIndex(parsed.unlockedLevelIndex);
         if (parsed.completedLevels) setCompletedLevels(parsed.completedLevels);
-        if (typeof parsed.totalXp === "number") setTotalXp(parsed.totalXp);
+        if (typeof parsed.totalXp === "number") {
+          curXp = parsed.totalXp;
+          setTotalXp(parsed.totalXp);
+        }
         if (typeof parsed.streakDays === "number") setStreakDays(parsed.streakDays);
         if (typeof parsed.isJuryUnlockedAll === "boolean") setIsJuryUnlockedAll(parsed.isJuryUnlockedAll);
       }
+
+      // Sync guest profile to Supabase user_profiles
+      syncUserProfileToSupabase({
+        id: pid,
+        displayName: curProfile.name,
+        targetGroup: "general",
+        totalScore: curXp,
+      }).catch(() => {});
     } catch (e) {
       console.warn("Could not load player journey from localStorage", e);
     } finally {
@@ -46,7 +81,7 @@ export function usePlayerJourney() {
     }
   }, []);
 
-  // Save to localStorage
+  // Save to localStorage & sync profile to Supabase
   const saveState = useCallback(
     (
       newProfile: PlayerProfile,
@@ -57,6 +92,7 @@ export function usePlayerJourney() {
     ) => {
       if (typeof window === "undefined") return;
       try {
+        const pid = getOrCreatePlayerId();
         localStorage.setItem(
           JOURNEY_STORAGE_KEY,
           JSON.stringify({
@@ -68,6 +104,14 @@ export function usePlayerJourney() {
             isJuryUnlockedAll: newJury,
           })
         );
+
+        // Cập nhật lên Supabase user_profiles
+        syncUserProfileToSupabase({
+          id: pid,
+          displayName: newProfile.name,
+          targetGroup: "general",
+          totalScore: newXp,
+        }).catch(() => {});
       } catch (e) {
         console.warn("Could not save player journey to localStorage", e);
       }
@@ -133,10 +177,12 @@ export function usePlayerJourney() {
       saveState(profile, nextUnlocked, updatedLevels, nextXp, isJuryUnlockedAll);
 
       // Đồng bộ tiến độ lên Supabase Cloud (bất đồng bộ)
+      const pid = getOrCreatePlayerId();
       saveUserProgressToSupabase({
         scenarioId,
         score,
         passedSafely: passed,
+        userId: pid,
       }).catch(() => {});
 
       return {
