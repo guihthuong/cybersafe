@@ -144,15 +144,25 @@ export function CategoryGrid() {
                 {/* Soft ambient glow */}
                 <div className="absolute w-32 h-32 rounded-full bg-sky-200/40 blur-xl pointer-events-none group-hover:scale-125 transition-transform duration-500" />
 
-                {/* Main Illustrated Mascot */}
-                <div className="relative z-10 w-28 h-28 sm:w-32 sm:h-32 hover-tilt flex items-center justify-center">
-                  <img
-                    src={cat.imageUrl}
-                    alt={cat.name}
-                    className="w-full h-full object-contain drop-shadow-md select-none group-hover:scale-110 transition-transform duration-300"
-                    loading="lazy"
-                  />
-                </div>
+                {/* Main Illustrated Mascot with Swaying Animation */}
+                {(() => {
+                  const swayAnim =
+                    idx % 3 === 0
+                      ? "animate-pendulum"
+                      : idx % 3 === 1
+                      ? "animate-rock-sway"
+                      : "animate-wobble";
+                  return (
+                    <div className={`relative z-10 w-28 h-28 sm:w-32 sm:h-32 ${swayAnim} hover-tilt flex items-center justify-center`}>
+                      <img
+                        src={cat.imageUrl}
+                        alt={cat.name}
+                        className="w-full h-full object-contain drop-shadow-md select-none group-hover:scale-110 transition-transform duration-300"
+                        loading="lazy"
+                      />
+                    </div>
+                  );
+                })()}
 
                 {/* Floating Group Code Pill */}
                 <div className="absolute top-3 left-3 z-20">

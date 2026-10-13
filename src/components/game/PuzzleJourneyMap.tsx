@@ -50,20 +50,37 @@ export function PuzzleJourneyMap({
   const nodes = useMemo(() => {
     return scenarios.map((scenario, relIdx) => {
       const globalIdx = globalStartIndex + relIdx;
-      // Oscillate horizontally between 28% and 72%
-      // relIdx % 2 === 0 => 32%, relIdx % 2 === 1 => 68%
-      const xPercent = relIdx % 2 === 0 ? 32 : 68;
-      const yPixels = relIdx * ROW_HEIGHT + 80;
+      // Oscillate horizontally between 30% and 70%
+      const xPercent = relIdx % 2 === 0 ? 30 : 70;
+      const yPixels = relIdx * ROW_HEIGHT + 85;
 
-      const isUnlocked = isJuryUnlockedAll || globalIdx <= unlockedLevelIndex;
+      // ĐIỀU KIỆN MỞ KHÓA CHO TỪNG ĐỀ TÀI:
+      // 1. Ải đầu tiên của đề tài (relIdx === 0) luôn luôn được mở để người học vào bất kỳ đề tài nào cũng rèn luyện được ngay!
+      // 2. Các ải tiếp theo trong đề tài (relIdx > 0) chỉ mở khi ải trước đó đã trả lời đúng chuẩn an toàn (passedSafely)!
+      const isFirstInTopic = relIdx === 0;
+      const prevNodeCompleted =
+        relIdx > 0 &&
+        Boolean(completedLevels[globalStartIndex + relIdx - 1]?.passedSafely);
+
+      const isUnlocked =
+        isJuryUnlockedAll ||
+        isFirstInTopic ||
+        prevNodeCompleted ||
+        globalIdx <= unlockedLevelIndex;
+
       const isCompleted = Boolean(completedLevels[globalIdx]?.passedSafely);
-      const isCurrent = globalIdx === unlockedLevelIndex && !isCompleted;
+      const isCurrent =
+        isUnlocked &&
+        !isCompleted &&
+        (isFirstInTopic || prevNodeCompleted);
+
       const earnedStars = completedLevels[globalIdx]?.stars || 0;
 
       return {
         relIdx,
         globalIdx,
         levelNum: globalIdx + 1,
+        relLevelNum: relIdx + 1,
         scenario,
         xPercent,
         yPixels,
@@ -95,11 +112,11 @@ export function PuzzleJourneyMap({
             )}
           </div>
 
-          {/* Illustrated Chapter Landmark with Swaying Animation */}
+          {/* Illustrated Chapter Landmark with Pendulum Swaying Animation */}
           {chapterImageUrl && (
             <div className="relative w-28 h-28 sm:w-32 sm:h-32 shrink-0 flex items-center justify-center">
               <div className="absolute inset-0 bg-sky-200/40 rounded-full blur-xl animate-pulse-halo pointer-events-none" />
-              <div className="relative z-10 w-full h-full animate-sway-gentle hover-tilt flex items-center justify-center">
+              <div className="relative z-10 w-full h-full animate-pendulum hover-tilt flex items-center justify-center">
                 <img
                   src={chapterImageUrl}
                   alt={chapterTitle}
@@ -116,38 +133,25 @@ export function PuzzleJourneyMap({
         className="relative w-full rounded-3xl bg-gradient-to-b from-sky-50/50 via-slate-50 to-emerald-50/50 border-2 border-slate-200 shadow-inner overflow-hidden"
         style={{ minHeight: `${totalHeight}px` }}
       >
-        {/* SVG CANDY CRUSH ROAD OVERLAY */}
+        {/* SVG CANDY CRUSH ROAD OVERLAY WITH VISIBLE CONNECTING WIRE */}
         <svg
           className="absolute inset-0 w-full h-full pointer-events-none z-0"
+          viewBox={`0 0 1000 ${totalHeight}`}
+          preserveAspectRatio="none"
           style={{ width: "100%", height: `${totalHeight}px` }}
         >
-          <defs>
-            <linearGradient id="roadUnlockedGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#38bdf8" />
-              <stop offset="100%" stopColor="#0284c7" />
-            </linearGradient>
-            <linearGradient id="roadCompletedGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#34d399" />
-              <stop offset="100%" stopColor="#059669" />
-            </linearGradient>
-          </defs>
-
           {nodes.map((node, i) => {
             if (i >= nodes.length - 1) return null;
             const nextNode = nodes[i + 1];
 
-            // SVG Path using cubic Bezier curve
-            // We use percentage coordinates converted to path representation:
-            // S-curve between (node.xPercent%, node.yPixels) and (nextNode.xPercent%, nextNode.yPixels)
+            // Numerical SVG coordinates (0 to 1000 x-axis)
+            const x1 = (node.xPercent / 100) * 1000;
+            const x2 = (nextNode.xPercent / 100) * 1000;
             const y1 = node.yPixels;
             const y2 = nextNode.yPixels;
             const dy = (y2 - y1) * 0.55;
 
-            // Compute SVG path with SVG percentages by viewBox or relative path
-            const x1 = node.xPercent;
-            const x2 = nextNode.xPercent;
-
-            const pathD = `M ${x1}% ${y1} C ${x1}% ${y1 + dy}, ${x2}% ${y2 - dy}, ${x2}% ${y2}`;
+            const pathD = `M ${x1} ${y1} C ${x1} ${y1 + dy}, ${x2} ${y2 - dy}, ${x2} ${y2}`;
             const isSegmentCompleted = node.isCompleted && nextNode.isUnlocked;
 
             return (
@@ -157,7 +161,7 @@ export function PuzzleJourneyMap({
                   d={pathD}
                   fill="none"
                   stroke="#cbd5e1"
-                  strokeWidth="38"
+                  strokeWidth="48"
                   strokeLinecap="round"
                 />
 
@@ -165,18 +169,18 @@ export function PuzzleJourneyMap({
                 <path
                   d={pathD}
                   fill="none"
-                  stroke={isSegmentCompleted ? "#d1fae5" : "#f1f5f9"}
-                  strokeWidth="28"
+                  stroke={isSegmentCompleted ? "#dcfce7" : "#f1f5f9"}
+                  strokeWidth="36"
                   strokeLinecap="round"
                 />
 
-                {/* 3. Center Painted Dashes (vạch kẻ đường Candy style) */}
+                {/* 3. Center Painted Dashes / Dây nối Candy style */}
                 <path
                   d={pathD}
                   fill="none"
-                  stroke={isSegmentCompleted ? "#059669" : "#94a3b8"}
-                  strokeWidth="4"
-                  strokeDasharray="10 10"
+                  stroke={isSegmentCompleted ? "#059669" : "#64748b"}
+                  strokeWidth="6"
+                  strokeDasharray="16 14"
                   strokeLinecap="round"
                 />
               </g>
@@ -297,25 +301,25 @@ export function PuzzleJourneyMap({
             roadsideArt = {
               image: "/images/stealing OTP.png",
               label: "Cảnh Giác OTP",
-              anim: "animate-float-slow",
+              anim: "animate-pendulum",
             };
           } else if (node.relIdx === 1) {
             roadsideArt = {
               image: "/images/hacker.png",
               label: "Vùng Nguy Cơ",
-              anim: "animate-sway-gentle",
+              anim: "animate-rock-sway",
             };
           } else if (node.relIdx === 2) {
             roadsideArt = {
               image: "/images/qr scam.png",
               label: "Bẫy Quét QR",
-              anim: "animate-float-reverse",
+              anim: "animate-wobble",
             };
           } else if (node.relIdx === 3) {
             roadsideArt = {
               image: "/images/falling stock chart scam.png",
               label: "Sàn Ảo Đáy",
-              anim: "animate-float-slow",
+              anim: "animate-pendulum",
             };
           }
 

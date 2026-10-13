@@ -51,7 +51,7 @@ export function QuickMiniChallenge() {
           <div className="p-5 sm:p-6 rounded-2xl bg-slate-50 border border-slate-200 text-slate-900 flex flex-col md:flex-row items-center gap-6">
             <div className="relative w-24 h-24 sm:w-28 sm:h-28 shrink-0 flex items-center justify-center">
               <div className="absolute inset-0 bg-sky-200/40 rounded-full blur-md animate-pulse-halo pointer-events-none" />
-              <div className="relative z-10 w-full h-full animate-float-slow hover-tilt flex items-center justify-center">
+              <div className="relative z-10 w-full h-full animate-pendulum hover-tilt flex items-center justify-center">
                 <img
                   src="/images/fake police.png"
                   alt="Mạo danh công quyền"

@@ -171,7 +171,7 @@ export default function PlayPage() {
 
             {/* Grid of Topics / Chapters */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-              {PUZZLE_CHAPTERS.map((chapter) => {
+              {PUZZLE_CHAPTERS.map((chapter, idx) => {
                 // Calculate progress within this specific topic
                 const chapterScenarios = chapter.scenarioIds
                   .map((id) => allScenarios.find((s) => s.scenario_id === id))
@@ -201,14 +201,24 @@ export default function PlayPage() {
                       {chapter.imageUrl && (
                         <div className="relative h-36 bg-gradient-to-b from-slate-50 via-sky-50/30 to-white rounded-2xl flex items-center justify-center p-3 border border-slate-100 overflow-hidden group-hover:border-sky-300 transition-colors">
                           <div className="absolute w-24 h-24 rounded-full bg-sky-200/40 blur-lg pointer-events-none group-hover:scale-125 transition-transform duration-500" />
-                          <div className="relative z-10 w-24 h-24 hover-tilt flex items-center justify-center">
-                            <img
-                              src={chapter.imageUrl}
-                              alt={chapter.title}
-                              className="w-full h-full object-contain drop-shadow-sm select-none group-hover:scale-110 transition-transform duration-300"
-                              loading="lazy"
-                            />
-                          </div>
+                          {(() => {
+                            const swayAnim =
+                              idx % 3 === 0
+                                ? "animate-pendulum"
+                                : idx % 3 === 1
+                                ? "animate-rock-sway"
+                                : "animate-wobble";
+                            return (
+                              <div className={`relative z-10 w-24 h-24 ${swayAnim} hover-tilt flex items-center justify-center`}>
+                                <img
+                                  src={chapter.imageUrl}
+                                  alt={chapter.title}
+                                  className="w-full h-full object-contain drop-shadow-sm select-none group-hover:scale-110 transition-transform duration-300"
+                                  loading="lazy"
+                                />
+                              </div>
+                            );
+                          })()}
                         </div>
                       )}
 

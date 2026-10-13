@@ -64,8 +64,8 @@ export function HeroSection() {
 
             {/* Illustration Card Container */}
             <div className="relative z-10 p-6 sm:p-8 rounded-3xl bg-white/80 backdrop-blur-sm border-2 border-slate-200 shadow-xl flex flex-col items-center hover-tilt">
-              {/* Swaying & Floating Main Illustration */}
-              <div className="relative w-56 h-56 sm:w-64 sm:h-64 animate-float-slow flex items-center justify-center">
+              {/* Swaying & Rocking Main Illustration */}
+              <div className="relative w-56 h-56 sm:w-64 sm:h-64 animate-rock-sway flex items-center justify-center">
                 <img
                   src="/images/cybersecurity.png"
                   alt="CyberSafe Defense Hub"
