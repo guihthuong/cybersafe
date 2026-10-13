@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import confetti from "canvas-confetti";
 import { EducationalFeedback, Scenario } from "@/types/scenario";
-import { X, CheckCircle, ArrowRight } from "lucide-react";
+import { X, CheckCircle, ArrowRight, RotateCcw, AlertTriangle, ShieldCheck } from "lucide-react";
 
 interface EducationalFeedbackModalProps {
   isOpen: boolean;
@@ -12,6 +12,7 @@ interface EducationalFeedbackModalProps {
   passedSafely: boolean;
   earnedScore: number;
   onNextQuestion?: () => void;
+  onRetry?: () => void;
   hasNext?: boolean;
 }
 
@@ -22,6 +23,7 @@ export function EducationalFeedbackModal({
   passedSafely,
   earnedScore,
   onNextQuestion,
+  onRetry,
   hasNext = true,
 }: EducationalFeedbackModalProps) {
   const { feedback, consequence } = scenario;
@@ -44,43 +46,65 @@ export function EducationalFeedbackModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm overflow-y-auto">
-      <div className="relative w-full max-w-2xl rounded-3xl bg-white border-2 border-slate-200 shadow-2xl p-6 sm:p-8 my-8 text-slate-900 flex flex-col gap-6 max-h-[90vh] overflow-y-auto">
-        {/* Close Button */}
-        <button
-          onClick={onClose}
-          className="absolute top-5 right-5 p-2 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors cursor-pointer"
-          aria-label="Đóng"
-        >
-          <X className="w-5 h-5" />
-        </button>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-slate-900/60 backdrop-blur-md overflow-y-auto">
+      <div className="relative w-full max-w-2xl rounded-3xl bg-white border-2 border-slate-200 shadow-2xl p-6 sm:p-8 my-6 text-slate-900 flex flex-col gap-5 max-h-[92vh] overflow-y-auto">
+        {/* Sticky Header with Close Button */}
+        <div className="sticky -top-6 -mt-2 -mx-6 px-6 pt-4 pb-4 bg-white/95 backdrop-blur-md border-b border-slate-200 z-40 flex items-start justify-between gap-4">
+          <div className="flex flex-col gap-1.5">
+            <div className="flex flex-wrap items-center gap-2">
+              <span
+                className={`text-xs font-mono font-bold px-3 py-1 rounded-md border flex items-center gap-1.5 ${
+                  passedSafely
+                    ? "bg-emerald-50 text-emerald-800 border-emerald-300"
+                    : "bg-rose-50 text-rose-800 border-rose-300"
+                }`}
+              >
+                {passedSafely ? (
+                  <>
+                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>KẾT QUẢ: XỬ LÝ AN TOÀN CHUẨN XÁC</span>
+                  </>
+                ) : (
+                  <>
+                    <AlertTriangle className="w-3.5 h-3.5 text-rose-600" />
+                    <span>CẢNH BÁO: CHƯA ĐẠT CHUẨN AN TOÀN</span>
+                  </>
+                )}
+              </span>
 
-        {/* Modal Header */}
-        <div className="flex flex-col gap-2 pr-10 border-b border-slate-200 pb-4">
-          <div className="flex items-center gap-2.5">
-            <span className={`text-xs font-mono font-bold px-3 py-1 rounded-md border ${
-              passedSafely
-                ? "bg-emerald-50 text-emerald-800 border-emerald-300"
-                : "bg-rose-50 text-rose-800 border-rose-300"
-            }`}>
-              {passedSafely ? "KẾT QUẢ: XỬ LÝ AN TOÀN" : "CẢNH BÁO: PHƯƠNG ÁN RỦI RO"}
-            </span>
+              <span className="text-xs uppercase font-bold px-2.5 py-1 rounded-md bg-slate-100 text-slate-700 border border-slate-300">
+                {feedback.core_rule}
+              </span>
+            </div>
 
-            <span className="text-xs uppercase font-bold px-2.5 py-1 rounded-md bg-slate-100 text-slate-700 border border-slate-300">
-              Quy tắc: {feedback.core_rule}
-            </span>
-
-            <span className="text-xs text-slate-500 font-semibold ml-auto">
-              Điểm rèn luyện: +{earnedScore} XP
-            </span>
+            <h3 className="text-lg sm:text-xl font-black text-slate-900 leading-snug">
+              {passedSafely
+                ? "Đánh Giá: Bạn Đã Bảo Vệ Bản Thân An Toàn"
+                : "Khuyến Nghị: Hành Động Rủi Ro Cần Khắc Phục"}
+            </h3>
           </div>
 
-          <h3 className="text-xl sm:text-2xl font-black text-slate-900 leading-snug pt-1">
-            {passedSafely
-              ? "Đánh Giá: Bạn Đã Bảo Vệ Bản Thân An Toàn"
-              : "Khuyến Nghị: Cần Nâng Cao Kỹ Năng Tự Vệ Số"}
-          </h3>
+          <button
+            onClick={onClose}
+            className="p-2 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors cursor-pointer shrink-0"
+            aria-label="Đóng"
+          >
+            <X className="w-5 h-5" />
+          </button>
         </div>
+
+        {/* Cảnh báo nghiêm ngặt nếu chưa an toàn */}
+        {!passedSafely && (
+          <div className="p-4 rounded-2xl bg-rose-50 border-2 border-rose-200 text-rose-950 space-y-1">
+            <div className="font-black text-xs uppercase tracking-wider text-rose-800 flex items-center gap-1.5">
+              <AlertTriangle className="w-4 h-4 text-rose-600" />
+              <span>Yêu cầu quy chuẩn đề tài:</span>
+            </div>
+            <p className="text-xs sm:text-sm font-semibold leading-relaxed text-rose-900">
+              Bạn chưa thể mở khóa ải tiếp theo vì đã chọn phương án tiềm ẩn nguy hiểm. Vui lòng đọc kỹ giải thích bên dưới và bấm <strong>&ldquo;Thử Lại Ải Này&rdquo;</strong> để đưa ra quyết định an toàn!
+            </p>
+          </div>
+        )}
 
         {/* KHỐI 1: VÌ SAO LỰA CHỌN NÀY AN TOÀN / KHÔNG AN TOÀN + ĐỒNG CẢM KHÔNG ĐỔ LỖI */}
         <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200">
@@ -134,8 +158,8 @@ export function EducationalFeedbackModal({
           <p className="text-xs sm:text-sm leading-relaxed text-rose-800 font-medium">{consequence.description}</p>
         </div>
 
-        {/* FOOTER ACTIONS - Prominent Next Question Button */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
+        {/* FOOTER ACTIONS - Xử lý theo đúng chuẩn: Đúng mới qua, sai thì phải thử lại */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-3 border-t border-slate-100">
           <button
             onClick={onClose}
             className="w-full sm:w-auto px-5 py-3 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm transition-colors cursor-pointer"
@@ -143,24 +167,37 @@ export function EducationalFeedbackModal({
             Đóng bảng giải thích
           </button>
 
-          {onNextQuestion && hasNext ? (
+          {passedSafely ? (
+            onNextQuestion && hasNext ? (
+              <button
+                onClick={() => {
+                  onClose();
+                  onNextQuestion();
+                }}
+                className="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-black text-base border-b-5 border-emerald-700 active:border-b-0 active:translate-y-1 shadow-md transition-all cursor-pointer flex items-center justify-center gap-2"
+              >
+                <span>Qua Câu Tiếp Theo</span>
+                <ArrowRight className="w-5 h-5" />
+              </button>
+            ) : (
+              <button
+                onClick={onClose}
+                className="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-black text-base border-b-5 border-emerald-700 active:border-b-0 active:translate-y-1 shadow-md transition-all cursor-pointer flex items-center justify-center gap-2"
+              >
+                <CheckCircle className="w-5 h-5" />
+                <span>Hoàn Thành Xuất Sắc Ải Này!</span>
+              </button>
+            )
+          ) : (
             <button
               onClick={() => {
                 onClose();
-                onNextQuestion();
+                if (onRetry) onRetry();
               }}
-              className="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-black text-base border-b-5 border-emerald-700 active:border-b-0 active:translate-y-1 shadow-md transition-all cursor-pointer flex items-center justify-center gap-2"
+              className="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-rose-600 hover:bg-rose-700 text-white font-black text-base border-b-5 border-rose-800 active:border-b-0 active:translate-y-1 shadow-md transition-all cursor-pointer flex items-center justify-center gap-2"
             >
-              <span>Qua Câu Tiếp Theo</span>
-              <ArrowRight className="w-5 h-5" />
-            </button>
-          ) : (
-            <button
-              onClick={onClose}
-              className="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-black text-base border-b-5 border-emerald-700 active:border-b-0 active:translate-y-1 shadow-md transition-all cursor-pointer flex items-center justify-center gap-2"
-            >
-              <CheckCircle className="w-5 h-5" />
-              <span>Đã Hiểu & Hoàn Tất</span>
+              <RotateCcw className="w-5 h-5" />
+              <span>Thử Lại Ải Này (Chọn Lại Hành Động An Toàn)</span>
             </button>
           )}
         </div>

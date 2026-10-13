@@ -41,7 +41,9 @@ export async function POST(req: Request) {
       );
     }
 
-    const model = process.env.GROQ_MODEL || "llama-3.3-70b-versatile";
+    const model = process.env.GROQ_MODEL || "qwen/qwen3.8-27b";
+
+
 
     // Abort controller timeout 8s để không bắt người dùng đợi lâu nếu rớt mạng
     const controller = new AbortController();

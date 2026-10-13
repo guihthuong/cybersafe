@@ -1,14 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { OFFICIAL_QUESTION_BANK } from "@/data/officialQuestionBank";
-
 import { SCENARIO_Q1_1, SCENARIO_Q1_3, SCENARIO_Q2_2 } from "@/data/phase2Scenarios";
+import { PUZZLE_CHAPTERS } from "@/data/puzzleChapters";
 import { Scenario } from "@/types/scenario";
 import { usePlayerJourney } from "@/hooks/usePlayerJourney";
 import { useScenarios } from "@/hooks/useScenarios";
 import { PlayerHeaderBar } from "@/components/game/PlayerHeaderBar";
-import { PuzzleJourneyMap } from "@/components/game/PuzzleJourneyMap";
 import { PuzzleLevelModal } from "@/components/game/PuzzleLevelModal";
 import {
   Layers,
@@ -27,6 +27,9 @@ import {
   RefreshCw,
   Server,
   FileCode,
+  Flag,
+  Compass,
+  Award,
 } from "lucide-react";
 
 export default function PlayPage() {
@@ -62,7 +65,6 @@ export default function PlayPage() {
   const [viewMode, setViewMode] = useState<"map" | "list">("map");
   const [activeModalLevelIndex, setActiveModalLevelIndex] = useState<number | null>(null);
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<string>("all");
-  const [isBankOpen, setIsBankOpen] = useState(false);
   const [isDbModalOpen, setIsDbModalOpen] = useState(false);
   const [seedLoading, setSeedLoading] = useState(false);
   const [seedStatusMessage, setSeedStatusMessage] = useState<string | null>(null);
@@ -88,18 +90,14 @@ export default function PlayPage() {
     }
   };
 
-
-  // Click on level node
   const handleSelectLevel = (levelIndex: number) => {
     setActiveModalLevelIndex(levelIndex);
   };
 
-  // Close modal
   const handleCloseModal = () => {
     setActiveModalLevelIndex(null);
   };
 
-  // Level completed in modal
   const handleCompleteLevel = (
     levelIndex: number,
     scenarioId: string,
@@ -109,7 +107,6 @@ export default function PlayPage() {
     recordLevelResult(levelIndex, scenarioId, passed, score);
   };
 
-  // Jump to next level
   const handleNextLevel = () => {
     if (activeModalLevelIndex !== null && activeModalLevelIndex < allScenarios.length - 1) {
       setActiveModalLevelIndex(activeModalLevelIndex + 1);
@@ -118,7 +115,6 @@ export default function PlayPage() {
     }
   };
 
-  // Jump to active level from header bar
   const handleContinueActiveLevel = () => {
     const targetIdx = Math.min(38, unlockedLevelIndex);
     setActiveModalLevelIndex(targetIdx);
@@ -134,7 +130,7 @@ export default function PlayPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-6xl mx-auto space-y-6">
+      <div className="max-w-6xl mx-auto space-y-8">
         {/* 1. PERSONALIZED PLAYER PROFILE & STATUS BAR */}
         <PlayerHeaderBar
           profile={profile}
@@ -156,122 +152,214 @@ export default function PlayPage() {
           onOpenDatabaseInfo={() => setIsDbModalOpen(true)}
         />
 
-
-        {/* 2. MAIN EXPERIENCE: PUZZLE JOURNEY MAP (CANDY CRUSH / DUOLINGO STYLE) */}
+        {/* 2. CHÍNH: HUB BẢN ĐỒ CÁC ĐỀ TÀI KHOA HỌC (THEO CHƯƠNG ROUTE RIÊNG) */}
         {viewMode === "map" ? (
-          <div className="space-y-4">
-            {/* Map Header Introduction */}
-            <div className="text-center max-w-xl mx-auto space-y-1.5 pt-2">
+          <div className="space-y-6">
+            {/* Header Introduction */}
+            <div className="text-center max-w-2xl mx-auto space-y-2">
               <span className="text-xs uppercase font-mono font-bold text-sky-800 tracking-wider">
-                Bản Đồ Thử Thách Không Gian Mạng
+                11 Nhóm Thủ Đoạn Lừa Đảo Trực Tuyến & Bộ Câu Hỏi Kiểm Chuẩn
               </span>
               <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-                Chinh Phục 39 Ải Phòng Ngừa Lừa Đảo
+                Chọn Đề Tài Luyện Tập Phản Xạ An Toàn Số
               </h2>
-              <p className="text-xs sm:text-sm text-slate-600 font-medium leading-relaxed">
-                Nhấn vào các ải mở khóa trên đường đi để rèn luyện phản xạ. Trả lời chính xác để mở đường tới các vùng đất tiếp theo!
+              <p className="text-sm text-slate-600 leading-relaxed">
+                Mỗi đề tài là một tuyến hành trình độc lập gồm các tình huống thực tiễn. Trong mỗi đề tài,
+                bạn <strong>phải trả lời đúng chuẩn từng ải</strong> mới được mở khóa ải tiếp theo, không thể bỏ qua (skip).
               </p>
             </div>
 
-            {/* The Winding Puzzle Road */}
-            <PuzzleJourneyMap
-              scenarios={allScenarios}
-              unlockedLevelIndex={unlockedLevelIndex}
-              completedLevels={completedLevels}
-              isJuryUnlockedAll={isJuryUnlockedAll}
-              avatarId={profile.avatarId}
-              onSelectLevel={handleSelectLevel}
-            />
+            {/* Grid of Topics / Chapters */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              {PUZZLE_CHAPTERS.map((chapter) => {
+                // Calculate progress within this specific topic
+                const chapterScenarios = chapter.scenarioIds
+                  .map((id) => allScenarios.find((s) => s.scenario_id === id))
+                  .filter(Boolean);
+
+                const completedInChapter = chapterScenarios.filter((s) => {
+                  const gIdx = allScenarios.findIndex((all) => all.scenario_id === s?.scenario_id);
+                  return completedLevels[gIdx]?.passedSafely;
+                }).length;
+
+                const starsInChapter = chapterScenarios.reduce((acc, s) => {
+                  const gIdx = allScenarios.findIndex((all) => all.scenario_id === s?.scenario_id);
+                  return acc + (completedLevels[gIdx]?.stars || 0);
+                }, 0);
+
+                const totalStarsPossible = chapterScenarios.length * 3;
+                const isCompleted = completedInChapter === chapterScenarios.length && chapterScenarios.length > 0;
+                const chapterPercent = Math.round((completedInChapter / chapterScenarios.length) * 100);
+
+                return (
+                  <div
+                    key={chapter.id}
+                    className="rounded-3xl bg-white border-2 border-slate-200 hover:border-sky-400 p-6 shadow-xs hover:shadow-lg transition-all flex flex-col justify-between space-y-5 group"
+                  >
+                    <div className="space-y-3">
+                      {/* Topic Badge & Stars */}
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 border border-slate-200 text-slate-800 text-xs font-bold font-mono uppercase tracking-wider">
+                          <Flag className="w-3 h-3 text-sky-700" />
+                          <span>{chapter.topicCode}</span>
+                        </span>
+
+                        <div className="flex items-center gap-1 text-xs font-bold text-amber-500">
+                          <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                          <span>
+                            {starsInChapter}/{totalStarsPossible}★
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Title & Subtitle */}
+                      <div>
+                        <h3 className="text-lg font-black text-slate-900 group-hover:text-sky-700 transition-colors leading-snug">
+                          {chapter.title}
+                        </h3>
+                        <p className="text-xs font-bold text-slate-500 mt-0.5">
+                          {chapter.subtitle}
+                        </p>
+                      </div>
+
+                      {/* Description */}
+                      <p className="text-xs text-slate-600 line-clamp-3 leading-relaxed font-medium">
+                        {chapter.description}
+                      </p>
+                    </div>
+
+                    {/* Progress Bar & Enter Topic Button */}
+                    <div className="space-y-3 pt-3 border-t border-slate-100">
+                      <div className="space-y-1">
+                        <div className="flex items-center justify-between text-[11px] font-bold text-slate-500">
+                          <span>
+                            Tiến độ: <strong>{completedInChapter}/{chapterScenarios.length} Ải</strong>
+                          </span>
+                          <span className={isCompleted ? "text-emerald-700 font-black" : "text-slate-600"}>
+                            {isCompleted ? "ĐÃ HOÀN TẤT ✓" : `${chapterPercent}%`}
+                          </span>
+                        </div>
+                        <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden border border-slate-200">
+                          <div
+                            className={`h-full rounded-full transition-all duration-500 ${
+                              isCompleted
+                                ? "bg-emerald-500"
+                                : "bg-gradient-to-r from-sky-500 to-indigo-600"
+                            }`}
+                            style={{ width: `${Math.max(4, chapterPercent)}%` }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Link to dedicated Chapter Road route */}
+                      <Link
+                        href={`/play/${chapter.id}`}
+                        className={`w-full py-3 rounded-2xl font-bold text-xs flex items-center justify-center gap-2 shadow-xs transition-all ${
+                          isCompleted
+                            ? "bg-emerald-50 text-emerald-800 border-2 border-emerald-300 hover:bg-emerald-100"
+                            : "bg-sky-600 hover:bg-sky-700 text-white border-b-4 border-sky-800 active:border-b-0 active:translate-y-1"
+                        }`}
+                      >
+                        <span>{isCompleted ? "Xem Lại Bản Đồ Đề Tài" : "Vào Luyện Tập Đề Tài Này"}</span>
+                        <ArrowRight className="w-4 h-4" />
+                      </Link>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         ) : (
-          /* 3. ALTERNATIVE: DIRECT LIST / CARD BROWSER VIEW */
-          <div className="space-y-6">
-            {/* Filter and Bank Header */}
-            <div className="p-6 rounded-3xl bg-white border border-slate-200 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-xs">
-              <div>
-                <span className="text-xs font-mono font-bold text-sky-800 uppercase tracking-wider block mb-1">
-                  Chế Độ Danh Sách Tình Huống
-                </span>
-                <h3 className="text-xl sm:text-2xl font-black text-slate-900">
-                  Toàn Bộ 39 Bài Tập Rèn Luyện
-                </h3>
-                <p className="text-xs sm:text-sm text-slate-500 font-medium">
-                  Xem theo nhóm danh mục hoặc chọn trực tiếp bài tập bạn muốn kiểm tra.
-                </p>
-              </div>
-
-              <select
-                value={selectedCategoryFilter}
-                onChange={(e) => setSelectedCategoryFilter(e.target.value)}
-                className="px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-300 text-xs font-bold text-slate-800 outline-none cursor-pointer"
+          /* 3. ALTERNATIVE VIEW: LIST BROWSER */
+          <div className="space-y-5">
+            {/* Filter */}
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                onClick={() => setSelectedCategoryFilter("all")}
+                className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                  selectedCategoryFilter === "all"
+                    ? "bg-slate-900 text-white shadow-xs"
+                    : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"
+                }`}
               >
-                <option value="all">Tất cả 11 nhóm chủ đề</option>
-                <option value="fake_police_authority">N01: Giả mạo cơ quan công quyền</option>
-                <option value="bank_otp_fraud">N02: Giả mạo ngân hàng / OTP</option>
-                <option value="easy_job_high_pay">N03: Lừa việc làm, CTV</option>
-                <option value="romance_investment_pig">N04: Lừa đầu tư, tài chính ảo</option>
-                <option value="ecommerce_fake_shipper">N05: Lừa mua bán, shipper</option>
-                <option value="social_account_takeover">N07: Chiếm đoạt nick mạng xã hội</option>
-                <option value="deepfake_video_call">N08: Deepfake gọi video</option>
-                <option value="lottery_reward_trap">N09: Trúng thưởng tri ân</option>
-                <option value="fake_scholarship_course">N10: Trại hè, học bổng nhí</option>
-                <option value="malicious_app_link">N11: Mã độc tải file .apk</option>
-              </select>
+                Tất Cả 39 Ải
+              </button>
+              <button
+                onClick={() => setSelectedCategoryFilter("fake_police_authority")}
+                className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                  selectedCategoryFilter === "fake_police_authority"
+                    ? "bg-sky-600 text-white shadow-xs"
+                    : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"
+                }`}
+              >
+                Mạo Danh Công Quyền
+              </button>
+              <button
+                onClick={() => setSelectedCategoryFilter("fake_brand_bank")}
+                className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                  selectedCategoryFilter === "fake_brand_bank"
+                    ? "bg-indigo-600 text-white shadow-xs"
+                    : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"
+                }`}
+              >
+                Giả Mạo Ngân Hàng
+              </button>
+              <button
+                onClick={() => setSelectedCategoryFilter("online_employment")}
+                className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                  selectedCategoryFilter === "online_employment"
+                    ? "bg-purple-600 text-white shadow-xs"
+                    : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"
+                }`}
+              >
+                Lừa Đảo Việc Làm
+              </button>
+              <button
+                onClick={() => setSelectedCategoryFilter("deepfake_multimedia")}
+                className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                  selectedCategoryFilter === "deepfake_multimedia"
+                    ? "bg-amber-600 text-white shadow-xs"
+                    : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"
+                }`}
+              >
+                Deepfake & AI
+              </button>
             </div>
 
-            {/* List Grid */}
+            {/* Grid Cards of Filtered Levels */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {filteredBank.map((scenario) => {
-                const globalIdx = allScenarios.findIndex(
+                const globalIndex = allScenarios.findIndex(
                   (s) => s.scenario_id === scenario.scenario_id
                 );
-                const levelNum = globalIdx + 1;
-                const isUnlocked = isLevelUnlocked(globalIdx);
-                const isCompleted = completedLevels[globalIdx]?.passedSafely;
-                const stars = completedLevels[globalIdx]?.stars || 0;
+                const isUnlocked = isLevelUnlocked(globalIndex);
+                const progressItem = completedLevels[globalIndex];
+                const isPassed = progressItem?.passedSafely;
 
                 return (
                   <div
                     key={scenario.scenario_id}
                     onClick={() => {
-                      if (isUnlocked) handleSelectLevel(globalIdx);
+                      if (isUnlocked) handleSelectLevel(globalIndex);
                     }}
-                    className={`p-5 rounded-2xl border transition-all flex flex-col justify-between gap-3 shadow-xs ${
-                      isCompleted
-                        ? "bg-white border-emerald-300 hover:border-emerald-500 cursor-pointer"
-                        : isUnlocked
-                        ? "bg-white border-slate-200 hover:border-sky-500 cursor-pointer"
-                        : "bg-slate-100/70 border-slate-200 opacity-60 cursor-not-allowed"
+                    className={`rounded-2xl p-5 border transition-all text-left flex flex-col justify-between space-y-3 ${
+                      !isUnlocked
+                        ? "bg-slate-100/70 border-slate-200 text-slate-400 cursor-not-allowed opacity-60"
+                        : "bg-white border-slate-200 hover:border-sky-300 hover:shadow-md cursor-pointer group"
                     }`}
                   >
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <span
-                          className={`font-mono text-xs font-bold px-2 py-0.5 rounded-md ${
-                            isCompleted
-                              ? "bg-emerald-100 text-emerald-800"
-                              : isUnlocked
-                              ? "bg-sky-100 text-sky-800"
-                              : "bg-slate-200 text-slate-500"
-                          }`}
-                        >
-                          Ải {levelNum} • {scenario.scenario_id}
+                        <span className="font-mono text-xs font-bold text-slate-700 px-2 py-0.5 rounded-md bg-slate-100">
+                          Ải {globalIndex + 1} • {scenario.scenario_id}
                         </span>
 
                         <div className="flex items-center gap-1">
-                          {isCompleted ? (
-                            <div className="flex items-center gap-0.5">
-                              {[1, 2, 3].map((s) => (
-                                <Star
-                                  key={s}
-                                  className={`w-3 h-3 ${
-                                    s <= stars
-                                      ? "text-amber-400 fill-amber-400"
-                                      : "text-slate-300"
-                                  }`}
-                                />
-                              ))}
-                            </div>
+                          {isPassed ? (
+                            <span className="flex items-center gap-0.5 text-xs text-amber-500 font-bold">
+                              <Star className="w-3.5 h-3.5 fill-amber-400" />
+                              {progressItem.stars}★
+                            </span>
                           ) : isUnlocked ? (
                             <span className="text-[11px] font-bold text-sky-700 bg-sky-50 px-2 py-0.5 rounded-full">
                               Sẵn sàng
@@ -443,4 +531,3 @@ export default function PlayPage() {
     </div>
   );
 }
-

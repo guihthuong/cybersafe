@@ -6,7 +6,7 @@ import { BranchingScenarioQuestion } from "@/components/game/BranchingScenarioQu
 import { HotspotQuestion } from "@/components/game/HotspotQuestion";
 import { MultipleChoiceQuestion } from "@/components/game/MultipleChoiceQuestion";
 import { EducationalFeedbackModal } from "@/components/game/EducationalFeedbackModal";
-import { X, ArrowLeft, ArrowRight, Shield, Award } from "lucide-react";
+import { X, ArrowLeft, Shield, Award } from "lucide-react";
 import { useState } from "react";
 
 interface PuzzleLevelModalProps {
@@ -40,6 +40,9 @@ export function PuzzleLevelModal({
     earnedScore: 0,
   });
 
+  // Key để reset lại câu hỏi khi người dùng bấm Thử lại
+  const [questionAttemptKey, setQuestionAttemptKey] = useState<number>(0);
+
   if (!isOpen) return null;
 
   const levelNum = levelIndex + 1;
@@ -61,15 +64,20 @@ export function PuzzleLevelModal({
     onNextLevel();
   };
 
+  const handleRetryQuestion = () => {
+    setModalFeedbackState({ isOpen: false, passedSafely: false, earnedScore: 0 });
+    setQuestionAttemptKey((prev) => prev + 1);
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-slate-900/60 backdrop-blur-md overflow-y-auto">
       <div className="relative w-full max-w-5xl rounded-3xl bg-slate-50 border-2 border-slate-300 shadow-2xl p-5 sm:p-8 my-6 flex flex-col gap-6 max-h-[92vh] overflow-y-auto">
-        {/* Top Header Bar */}
-        <div className="flex items-center justify-between gap-4 pb-4 border-b border-slate-200">
+        {/* Top Header Bar - STICKY TOP TO NEVER BE HIDDEN ON SCROLL */}
+        <div className="sticky -top-5 sm:-top-8 -mt-2 -mx-5 sm:-mx-8 px-5 sm:px-8 pt-4 pb-4 bg-slate-50/95 backdrop-blur-md border-b border-slate-200 z-40 flex items-center justify-between gap-4 shadow-xs">
           <div className="flex items-center gap-3">
             <button
               onClick={onClose}
-              className="p-2 rounded-xl bg-white hover:bg-slate-100 border border-slate-300 text-slate-700 transition-colors cursor-pointer flex items-center gap-1.5 text-xs font-bold"
+              className="p-2 sm:px-3 sm:py-2 rounded-xl bg-white hover:bg-slate-100 border border-slate-300 text-slate-700 transition-colors cursor-pointer flex items-center gap-1.5 text-xs font-bold"
             >
               <ArrowLeft className="w-4 h-4" />
               <span className="hidden sm:inline">Trở lại bản đồ</span>
@@ -84,7 +92,7 @@ export function PuzzleLevelModal({
                   {scenario.scenario_id}
                 </span>
               </div>
-              <h3 className="text-base sm:text-xl font-black text-slate-900 leading-snug">
+              <h3 className="text-base sm:text-xl font-black text-slate-900 leading-snug line-clamp-1">
                 {scenario.category_name_vi}
               </h3>
             </div>
@@ -92,8 +100,8 @@ export function PuzzleLevelModal({
 
           <button
             onClick={onClose}
-            className="p-2 rounded-xl bg-white hover:bg-slate-100 text-slate-500 hover:text-slate-900 transition-colors cursor-pointer border border-slate-200"
-            title="Đóng"
+            className="p-2 rounded-xl bg-white hover:bg-slate-100 text-slate-500 hover:text-slate-900 transition-colors cursor-pointer border border-slate-200 shrink-0"
+            title="Đóng ải (Trở lại)"
           >
             <X className="w-5 h-5" />
           </button>
@@ -122,7 +130,7 @@ export function PuzzleLevelModal({
 
             {scenario.question_type === "branching_scenario" && (
               <BranchingScenarioQuestion
-                key={scenario.scenario_id}
+                key={`${scenario.scenario_id}_${questionAttemptKey}`}
                 scenario={scenario}
                 onFinish={handleFinishQuestion}
                 onNextQuestion={handleModalNextQuestion}
@@ -132,7 +140,7 @@ export function PuzzleLevelModal({
 
             {scenario.question_type === "hotspot" && (
               <HotspotQuestion
-                key={scenario.scenario_id}
+                key={`${scenario.scenario_id}_${questionAttemptKey}`}
                 scenario={scenario}
                 onFinish={handleFinishQuestion}
                 onNextQuestion={handleModalNextQuestion}
@@ -142,7 +150,7 @@ export function PuzzleLevelModal({
 
             {scenario.question_type === "multiple_choice" && (
               <MultipleChoiceQuestion
-                key={scenario.scenario_id}
+                key={`${scenario.scenario_id}_${questionAttemptKey}`}
                 scenario={scenario}
                 onFinish={handleFinishQuestion}
                 onNextQuestion={handleModalNextQuestion}
@@ -162,6 +170,7 @@ export function PuzzleLevelModal({
           passedSafely={modalFeedbackState.passedSafely}
           earnedScore={modalFeedbackState.earnedScore}
           onNextQuestion={handleModalNextQuestion}
+          onRetry={handleRetryQuestion}
           hasNext={hasNext}
         />
       </div>
