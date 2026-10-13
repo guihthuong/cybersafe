@@ -144,20 +144,20 @@ export function CategoryGrid() {
                 {/* Soft ambient glow */}
                 <div className="absolute w-32 h-32 rounded-full bg-sky-200/40 blur-xl pointer-events-none group-hover:scale-125 transition-transform duration-500" />
 
-                {/* Main Illustrated Mascot with Swaying Animation */}
+                {/* Main Illustrated Mascot (Still at rest, sways playfully on hover) */}
                 {(() => {
-                  const swayAnim =
+                  const swayHoverClass =
                     idx % 3 === 0
-                      ? "animate-pendulum"
+                      ? "group-hover-sway"
                       : idx % 3 === 1
-                      ? "animate-rock-sway"
-                      : "animate-wobble";
+                      ? "group-hover-rock"
+                      : "group-hover-wobble";
                   return (
-                    <div className={`relative z-10 w-28 h-28 sm:w-32 sm:h-32 ${swayAnim} hover-tilt flex items-center justify-center`}>
+                    <div className={`relative z-10 w-28 h-28 sm:w-32 sm:h-32 ${swayHoverClass} transition-transform duration-300 flex items-center justify-center`}>
                       <img
                         src={cat.imageUrl}
                         alt={cat.name}
-                        className="w-full h-full object-contain drop-shadow-md select-none group-hover:scale-110 transition-transform duration-300"
+                        className="w-full h-full object-contain drop-shadow-md select-none group-hover:scale-105 transition-transform duration-300"
                         loading="lazy"
                       />
                     </div>

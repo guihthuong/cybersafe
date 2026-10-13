@@ -202,18 +202,18 @@ export default function PlayPage() {
                         <div className="relative h-36 bg-gradient-to-b from-slate-50 via-sky-50/30 to-white rounded-2xl flex items-center justify-center p-3 border border-slate-100 overflow-hidden group-hover:border-sky-300 transition-colors">
                           <div className="absolute w-24 h-24 rounded-full bg-sky-200/40 blur-lg pointer-events-none group-hover:scale-125 transition-transform duration-500" />
                           {(() => {
-                            const swayAnim =
+                            const swayHoverClass =
                               idx % 3 === 0
-                                ? "animate-pendulum"
+                                ? "group-hover-sway"
                                 : idx % 3 === 1
-                                ? "animate-rock-sway"
-                                : "animate-wobble";
+                                ? "group-hover-rock"
+                                : "group-hover-wobble";
                             return (
-                              <div className={`relative z-10 w-24 h-24 ${swayAnim} hover-tilt flex items-center justify-center`}>
+                              <div className={`relative z-10 w-24 h-24 ${swayHoverClass} transition-transform duration-300 flex items-center justify-center`}>
                                 <img
                                   src={chapter.imageUrl}
                                   alt={chapter.title}
-                                  className="w-full h-full object-contain drop-shadow-sm select-none group-hover:scale-110 transition-transform duration-300"
+                                  className="w-full h-full object-contain drop-shadow-sm select-none group-hover:scale-105 transition-transform duration-300"
                                   loading="lazy"
                                 />
                               </div>

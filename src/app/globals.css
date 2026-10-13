@@ -238,7 +238,22 @@
   transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.35s ease;
 }
 .hover-tilt:hover {
-  transform: translateY(-4px) scale(1.08) rotate(6deg);
+  transform: translateY(-4px) scale(1.08) rotate(4deg);
+}
+
+/* Controlled Hover-Triggered Animations for Grid Cards */
+/* At rest: completely stationary, clean, and elegant. On hover: sways/rocks playfully! */
+.group:hover .group-hover-sway {
+  animation: pendulum-swing 2s ease-in-out infinite;
+  transform-origin: top center;
+}
+.group:hover .group-hover-rock {
+  animation: rock-sway 2s ease-in-out infinite;
+  transform-origin: bottom center;
+}
+.group:hover .group-hover-wobble {
+  animation: lively-wobble 1.8s ease-in-out infinite;
+  transform-origin: center center;
 }
 
 
