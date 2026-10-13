@@ -109,3 +109,21 @@ export interface RiskAnalysisResult {
   immediate_recommendations: string[];
   safe_verification_steps: string[];
 }
+
+export interface PlayerProfile {
+  name: string;
+  avatarId: string;
+  avatarTitle: string;
+  role: string;
+  joinedDate: string;
+}
+
+export interface LevelProgress {
+  levelIndex: number;
+  scenarioId: string;
+  completed: boolean;
+  passedSafely: boolean;
+  score: number;
+  stars: number; // 1, 2, 3
+  completedAt?: string;
+}

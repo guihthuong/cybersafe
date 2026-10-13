@@ -2,32 +2,46 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { Scenario, QuestionType, ScamCategory, UserScenarioProgress } from "@/types/scenario";
-import { fetchAllScenarios } from "@/lib/supabase";
-import { MOCK_SCENARIOS } from "@/data/mockScenarios";
+import { fetchAllScenarios, checkSupabaseHealth } from "@/lib/supabase";
+import { OFFICIAL_QUESTION_BANK } from "@/data/officialQuestionBank";
 
 const PROGRESS_STORAGE_KEY = "cybersafe_quest_progress_v1";
 
 export function useScenarios() {
-  const [scenarios, setScenarios] = useState<Scenario[]>(MOCK_SCENARIOS);
+  const [scenarios, setScenarios] = useState<Scenario[]>(OFFICIAL_QUESTION_BANK);
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState<ScamCategory | "all">("all");
   const [selectedType, setSelectedType] = useState<QuestionType | "all">("all");
   const [progress, setProgress] = useState<Record<string, UserScenarioProgress>>({});
   const [totalScore, setTotalScore] = useState<number>(0);
+  const [supabaseStatus, setSupabaseStatus] = useState<{
+    connected: boolean;
+    scenarioCount: number;
+    message: string;
+  }>({
+    connected: false,
+    scenarioCount: 0,
+    message: "Đang kiểm tra Supabase Cloud...",
+  });
+
+  const loadData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [data, health] = await Promise.all([
+        fetchAllScenarios(),
+        checkSupabaseHealth(),
+      ]);
+      setScenarios(data);
+      setSupabaseStatus(health);
+    } catch (err) {
+      console.error("Lỗi khi tải kịch bản:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   // Khởi tạo và load progress từ localStorage
   useEffect(() => {
-    async function loadData() {
-      try {
-        const data = await fetchAllScenarios();
-        setScenarios(data);
-      } catch (err) {
-        console.error("Lỗi khi tải kịch bản:", err);
-      } finally {
-        setLoading(false);
-      }
-    }
-
     if (typeof window !== "undefined") {
       try {
         const saved = localStorage.getItem(PROGRESS_STORAGE_KEY);
@@ -42,7 +56,8 @@ export function useScenarios() {
     }
 
     loadData();
-  }, []);
+  }, [loadData]);
+
 
   // Ghi nhận kết quả trả lời kịch bản
   const recordScenarioCompletion = useCallback(
@@ -114,7 +129,10 @@ export function useScenarios() {
     progress,
     totalScore,
     completedCount,
+    supabaseStatus,
+    refreshData: loadData,
     recordScenarioCompletion,
     resetProgress,
   };
 }
+

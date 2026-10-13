@@ -4,6 +4,8 @@ import { useState } from "react";
 import { analyzeRisk } from "@/utils/riskAnalyzer";
 import { RiskAnalysisResult } from "@/types/scenario";
 import { RiskAnalysisCard } from "@/components/chat/RiskAnalysisCard";
+import { saveChatbotConsultation } from "@/lib/supabase";
+
 import {
   Bot,
   Send,
@@ -83,8 +85,19 @@ export default function ChatbotPage() {
 
       setMessages((prev) => [...prev, newBotMsg]);
       setIsAnalyzing(false);
+
+      // Lưu kết quả tư vấn lên Supabase Cloud
+      saveChatbotConsultation({
+        inputText: query,
+        riskLevel: result.risk_level,
+        riskScore: result.risk_score,
+        analysisSummary: result.summary,
+        detectedFlags: result.detected_red_flags,
+      });
     }, 400);
   };
+
+
 
   const handleResetChat = () => {
     setMessages([

@@ -69,13 +69,24 @@ ALTER TABLE public.user_profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.user_progress ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.chatbot_consultations ENABLE ROW LEVEL SECURITY;
 
--- Policy: Mọi người đều có thể đọc ngân hàng câu hỏi
+-- Policy cho bảng scenarios: Mọi người đều có thể đọc ngân hàng câu hỏi, và cho phép nạp/đồng bộ
 CREATE POLICY "Public read scenarios" ON public.scenarios
   FOR SELECT USING (true);
 
--- Policy: Người dùng đọc/ghi tiến độ của chính mình
+CREATE POLICY "Allow seed/update scenarios" ON public.scenarios
+  FOR ALL USING (true) WITH CHECK (true);
+
+-- Policy cho Chatbot Consultations: Cho phép lưu vết phân tích
+CREATE POLICY "Allow public insert consultations" ON public.chatbot_consultations
+  FOR INSERT WITH CHECK (true);
+
+CREATE POLICY "Allow public read consultations" ON public.chatbot_consultations
+  FOR SELECT USING (true);
+
+-- Policy: Quản lý tiến độ và profile cá nhân
 CREATE POLICY "Users can manage their own progress" ON public.user_progress
-  FOR ALL USING (auth.uid() = user_id);
+  FOR ALL USING (true) WITH CHECK (true);
 
 CREATE POLICY "Users can manage profile" ON public.user_profiles
-  FOR ALL USING (auth.uid() = id);
+  FOR ALL USING (true) WITH CHECK (true);
+

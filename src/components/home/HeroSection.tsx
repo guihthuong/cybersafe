@@ -77,7 +77,7 @@ export function HeroSection() {
             href="/play"
             className="p-5 rounded-2xl bg-sky-600 hover:bg-sky-700 text-white font-extrabold text-base sm:text-lg shadow-sm transition-all flex items-center justify-center gap-3 cursor-pointer group"
           >
-            <span>Vào Phòng Huấn Luyện Thực Chiến</span>
+            <span>Vào Bản Đồ Thử Thách 39 Ải</span>
             <ArrowRight className="w-5 h-5 text-sky-200 group-hover:translate-x-1 transition-transform" />
           </Link>
 

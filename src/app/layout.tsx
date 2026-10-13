@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Be_Vietnam_Pro } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/common/Navbar";
 import { Footer } from "@/components/common/Footer";
 
-const inter = Inter({
-  subsets: ["latin", "vietnamese"],
+const beVietnamPro = Be_Vietnam_Pro({
+  weight: ["300", "400", "500", "600", "700", "800", "900"],
+  subsets: ["vietnamese", "latin"],
   display: "swap",
-  variable: "--font-inter",
+  variable: "--font-be-vietnam-pro",
 });
 
 export const metadata: Metadata = {
@@ -22,8 +23,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="vi" className={`${inter.variable} antialiased`}>
-      <body className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans selection:bg-sky-200 selection:text-sky-900">
+    <html lang="vi" className={`${beVietnamPro.variable}`}>
+      <body className="min-h-screen bg-slate-50 text-slate-900 flex flex-col antialiased selection:bg-sky-200 selection:text-sky-900">
         <Navbar />
         <main className="flex-1 flex flex-col">{children}</main>
         <Footer />
