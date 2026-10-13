@@ -93,10 +93,10 @@ export function PuzzleJourneyMap({
   }, [scenarios, globalStartIndex, unlockedLevelIndex, completedLevels, isJuryUnlockedAll]);
 
   return (
-    <div className="relative w-full max-w-2xl mx-auto py-6 px-4">
+    <div className="relative w-full max-w-2xl mx-auto py-4 sm:py-6 px-2 sm:px-4">
       {/* Optional Chapter Header Landmark */}
       {chapterTitle && (
-        <div className="mb-8 p-6 rounded-3xl bg-white border-2 border-slate-200 shadow-sm relative overflow-hidden flex flex-col sm:flex-row items-center justify-between gap-6">
+        <div className="mb-6 sm:mb-8 p-4 sm:p-6 rounded-3xl bg-white border-2 border-slate-200 shadow-sm relative overflow-hidden flex flex-col sm:flex-row items-center justify-between gap-4 sm:gap-6">
           <div className="space-y-2 text-center sm:text-left flex-1">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 border border-slate-200 text-slate-700 text-xs font-bold font-mono uppercase tracking-wider">
               <Flag className="w-3.5 h-3.5 text-sky-700" />
@@ -234,7 +234,7 @@ export function PuzzleJourneyMap({
                   }
                 }}
                 disabled={!node.isUnlocked}
-                className={`relative w-18 h-18 sm:w-20 sm:h-20 rounded-full flex flex-col items-center justify-center transition-all cursor-pointer font-black ${
+                className={`relative w-16 h-16 sm:w-20 sm:h-20 rounded-full flex flex-col items-center justify-center transition-all cursor-pointer font-black ${
                   node.isCompleted
                     ? "bg-gradient-to-b from-emerald-400 to-emerald-600 text-white border-4 border-emerald-200 border-b-6 border-b-emerald-800 shadow-lg active:border-b-4 active:translate-y-0.5 hover:scale-105"
                     : node.isCurrent
@@ -251,39 +251,39 @@ export function PuzzleJourneyMap({
               >
                 {node.isCompleted ? (
                   <>
-                    <span className="text-lg font-black leading-none">
-                      {node.levelNum}
+                    <span className="text-base sm:text-lg font-black leading-none">
+                      {node.relLevelNum || node.levelNum}
                     </span>
-                    <span className="text-[10px] uppercase font-bold text-emerald-100 mt-0.5">
+                    <span className="text-[9px] sm:text-[10px] uppercase font-bold text-emerald-100 mt-0.5">
                       ✓ Đạt
                     </span>
                   </>
                 ) : node.isCurrent ? (
                   <>
-                    <span className="text-xl font-black leading-none text-white">
-                      {node.levelNum}
+                    <span className="text-lg sm:text-xl font-black leading-none text-white">
+                      {node.relLevelNum || node.levelNum}
                     </span>
-                    <span className="text-[10px] uppercase font-bold text-sky-100 mt-0.5">
+                    <span className="text-[9px] sm:text-[10px] uppercase font-bold text-sky-100 mt-0.5">
                       Chơi
                     </span>
                   </>
                 ) : node.isUnlocked ? (
                   <>
-                    <span className="text-xl font-black leading-none">
-                      {node.levelNum}
+                    <span className="text-lg sm:text-xl font-black leading-none">
+                      {node.relLevelNum || node.levelNum}
                     </span>
-                    <span className="text-[10px] uppercase font-bold text-slate-400 mt-0.5">
+                    <span className="text-[9px] sm:text-[10px] uppercase font-bold text-slate-400 mt-0.5">
                       Mở
                     </span>
                   </>
                 ) : (
-                  <Lock className="w-6 h-6 text-slate-400" />
+                  <Lock className="w-5 h-5 sm:w-6 sm:h-6 text-slate-400" />
                 )}
               </button>
 
               {/* Scenario Label Pill below node */}
-              <div className="mt-2.5 max-w-[130px] text-center">
-                <span className="text-[11px] font-bold text-slate-700 bg-white/95 px-2 py-0.5 rounded-full border border-slate-200 shadow-xs block truncate">
+              <div className="mt-2 max-w-[105px] sm:max-w-[130px] text-center">
+                <span className="text-[10px] sm:text-[11px] font-bold text-slate-700 bg-white/95 px-2 py-0.5 rounded-full border border-slate-200 shadow-xs block truncate">
                   {node.scenario.scenario_id} • {node.scenario.category_name_vi}
                 </span>
               </div>

@@ -136,28 +136,28 @@ export default function ChapterPage({ params }: ChapterPageProps) {
     <div className="min-h-screen bg-slate-50 text-slate-900 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Navigation Breadcrumb Bar */}
-        <div className="p-4 sm:p-5 rounded-3xl bg-white border border-slate-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xs">
-          <div className="flex items-center gap-3">
+        <div className="p-4 sm:p-5 rounded-3xl bg-white border border-slate-200 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4 shadow-xs">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2.5 sm:gap-3">
             <Link
               href="/play"
-              className="p-2 sm:px-3 sm:py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer border border-slate-200"
+              className="w-fit px-3 py-1.5 sm:px-3 sm:py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer border border-slate-200 shrink-0"
             >
-              <ArrowLeft className="w-4 h-4" />
+              <ArrowLeft className="w-3.5 h-3.5" />
               <span>Quay Lại Danh Sách Đề Tài</span>
             </Link>
 
             <div>
-              <span className="font-mono text-xs font-bold text-sky-800 uppercase tracking-wider block">
+              <span className="font-mono text-[11px] sm:text-xs font-bold text-sky-800 uppercase tracking-wider block">
                 {chapter.topicCode}
               </span>
-              <h1 className="text-lg sm:text-xl font-black text-slate-900 leading-tight">
+              <h1 className="text-base sm:text-xl font-black text-slate-900 leading-tight">
                 {chapter.title}
               </h1>
             </div>
           </div>
 
           {/* Quick Metrics */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center justify-between sm:justify-end gap-2 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100">
             <div className="px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold flex items-center gap-1.5">
               <CheckCircle className="w-3.5 h-3.5 text-emerald-600" />
               <span>
@@ -167,7 +167,7 @@ export default function ChapterPage({ params }: ChapterPageProps) {
 
             <button
               onClick={toggleJuryUnlockedAll}
-              className={`p-2 rounded-xl border text-xs font-bold transition-colors cursor-pointer ${
+              className={`p-2 rounded-xl border text-xs font-bold transition-colors cursor-pointer shrink-0 ${
                 isJuryUnlockedAll
                   ? "bg-amber-100 text-amber-900 border-amber-300"
                   : "bg-white text-slate-500 hover:text-slate-800 border-slate-200"

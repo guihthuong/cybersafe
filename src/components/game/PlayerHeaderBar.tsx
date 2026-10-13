@@ -136,36 +136,36 @@ export function PlayerHeaderBar({
 
 
           {/* Quick Metrics Badges */}
-          <div className="grid grid-cols-3 gap-2 sm:gap-3 shrink-0">
+          <div className="grid grid-cols-3 gap-1.5 sm:gap-3 shrink-0 w-full lg:w-auto">
             {/* Metric 1: XP */}
-            <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200 text-center">
-              <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500 flex items-center justify-center gap-1">
-                <Award className="w-3.5 h-3.5 text-amber-500" />
-                <span>Kinh Nghiệm</span>
+            <div className="p-2 sm:p-3 rounded-2xl bg-slate-50 border border-slate-200 text-center">
+              <div className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-500 flex items-center justify-center gap-1">
+                <Award className="w-3 sm:w-3.5 h-3 sm:h-3.5 text-amber-500 shrink-0" />
+                <span className="truncate">Kinh Nghiệm</span>
               </div>
-              <div className="text-base sm:text-lg font-black text-slate-900 mt-0.5">
+              <div className="text-sm sm:text-lg font-black text-slate-900 mt-0.5">
                 {totalXp} XP
               </div>
             </div>
 
             {/* Metric 2: Progress */}
-            <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200 text-center">
-              <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500 flex items-center justify-center gap-1">
-                <Shield className="w-3.5 h-3.5 text-sky-600" />
-                <span>Đã Hoàn Thành</span>
+            <div className="p-2 sm:p-3 rounded-2xl bg-slate-50 border border-slate-200 text-center">
+              <div className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-500 flex items-center justify-center gap-1">
+                <Shield className="w-3 sm:w-3.5 h-3 sm:h-3.5 text-sky-600 shrink-0" />
+                <span className="truncate">Đã Đạt</span>
               </div>
-              <div className="text-base sm:text-lg font-black text-sky-700 mt-0.5">
-                {completedCount} / 39 Ải
+              <div className="text-sm sm:text-lg font-black text-sky-700 mt-0.5">
+                {completedCount} / 39
               </div>
             </div>
 
             {/* Metric 3: Streak */}
-            <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200 text-center">
-              <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500 flex items-center justify-center gap-1">
-                <Zap className="w-3.5 h-3.5 text-rose-500" />
-                <span>Chuỗi Rèn</span>
+            <div className="p-2 sm:p-3 rounded-2xl bg-slate-50 border border-slate-200 text-center">
+              <div className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-500 flex items-center justify-center gap-1">
+                <Zap className="w-3 sm:w-3.5 h-3 sm:h-3.5 text-rose-500 shrink-0" />
+                <span className="truncate">Chuỗi Rèn</span>
               </div>
-              <div className="text-base sm:text-lg font-black text-slate-900 mt-0.5">
+              <div className="text-sm sm:text-lg font-black text-slate-900 mt-0.5">
                 {streakDays} Ngày
               </div>
             </div>
@@ -174,12 +174,12 @@ export function PlayerHeaderBar({
 
         {/* Global Progress Bar */}
         <div className="space-y-1.5 pt-2 border-t border-slate-100">
-          <div className="flex items-center justify-between text-xs font-bold">
+          <div className="flex flex-wrap items-center justify-between gap-1 text-xs font-bold">
             <span className="text-slate-600">
-              Tiến trình bản đồ: <strong className="text-slate-900">{progressPercent}%</strong> chặng đường
+              Tiến trình: <strong className="text-slate-900">{progressPercent}%</strong>
             </span>
             <span className="text-slate-500">
-              Ải kế tiếp: <strong>Ải {Math.min(39, unlockedLevelIndex + 1)}</strong>
+              Kế tiếp: <strong>Ải {Math.min(39, unlockedLevelIndex + 1)}</strong>
             </span>
           </div>
           <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden border border-slate-200">
@@ -191,12 +191,12 @@ export function PlayerHeaderBar({
         </div>
 
         {/* Control Toolbar */}
-        <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
           {/* Left: View Mode Toggle */}
-          <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs font-bold">
+          <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs font-bold w-full sm:w-auto">
             <button
               onClick={() => onToggleViewMode("map")}
-              className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-all cursor-pointer ${
+              className={`flex-1 sm:flex-initial px-3 py-1.5 rounded-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                 viewMode === "map"
                   ? "bg-white text-sky-800 shadow-xs font-black"
                   : "text-slate-600 hover:text-slate-900"
@@ -207,7 +207,7 @@ export function PlayerHeaderBar({
             </button>
             <button
               onClick={() => onToggleViewMode("list")}
-              className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-all cursor-pointer ${
+              className={`flex-1 sm:flex-initial px-3 py-1.5 rounded-lg flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                 viewMode === "list"
                   ? "bg-white text-sky-800 shadow-xs font-black"
                   : "text-slate-600 hover:text-slate-900"
@@ -219,10 +219,10 @@ export function PlayerHeaderBar({
           </div>
 
           {/* Right: Quick Play & Jury Mode */}
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full sm:w-auto">
             <button
               onClick={onToggleJuryMode}
-              className={`px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+              className={`flex-1 sm:flex-initial px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                 isJuryUnlockedAll
                   ? "bg-amber-100 text-amber-900 border-amber-300 font-black shadow-xs"
                   : "bg-white text-slate-600 hover:text-slate-900 border-slate-300"
@@ -232,19 +232,19 @@ export function PlayerHeaderBar({
               {isJuryUnlockedAll ? (
                 <>
                   <Unlock className="w-3.5 h-3.5 text-amber-700" />
-                  <span>Đang mở toàn bộ Ải (Giám Khảo)</span>
+                  <span>Giám Khảo (Mở hết)</span>
                 </>
               ) : (
                 <>
                   <Lock className="w-3.5 h-3.5" />
-                  <span>Chế độ Giám Khảo (Mở hết ải)</span>
+                  <span>Chế độ Giám Khảo</span>
                 </>
               )}
             </button>
 
             <button
               onClick={onContinueActiveLevel}
-              className="px-4 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-xs transition-all cursor-pointer"
+              className="flex-1 sm:flex-initial px-4 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-xs transition-all cursor-pointer"
             >
               <span>Vào Ải {unlockedLevelIndex + 1}</span>
               <ChevronRight className="w-4 h-4" />
