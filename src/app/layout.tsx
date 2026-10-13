@@ -17,6 +17,9 @@ export const metadata: Metadata = {
   keywords: ["an toàn thông tin", "phòng chống lừa đảo mạng", "khoa học kỹ thuật", "edtech", "an toàn số người cao tuổi", "bảo vệ trẻ em trên mạng"],
 };
 
+import { AuthProvider } from "@/context/AuthContext";
+import { AuthModal } from "@/components/auth/AuthModal";
+
 export default function RootLayout({
   children,
 }: {
@@ -25,9 +28,12 @@ export default function RootLayout({
   return (
     <html lang="vi" className={`${beVietnamPro.variable}`}>
       <body className="min-h-screen bg-slate-50 text-slate-900 flex flex-col antialiased selection:bg-sky-200 selection:text-sky-900">
-        <Navbar />
-        <main className="flex-1 flex flex-col">{children}</main>
-        <Footer />
+        <AuthProvider>
+          <Navbar />
+          <main className="flex-1 flex flex-col">{children}</main>
+          <Footer />
+          <AuthModal />
+        </AuthProvider>
       </body>
     </html>
   );

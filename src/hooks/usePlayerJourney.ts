@@ -1,24 +1,24 @@
-"use client";
-
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { PlayerProfile, LevelProgress } from "@/types/scenario";
 import { AVATAR_OPTIONS } from "@/data/avatars";
-import { saveUserProgressToSupabase, syncUserProfileToSupabase } from "@/lib/supabase";
+import { saveUserProgressToSupabase, syncUserProfileToSupabase, supabase } from "@/lib/supabase";
+import { useAuth } from "@/context/AuthContext";
+import { OFFICIAL_QUESTION_BANK } from "@/data/officialQuestionBank";
 
-const JOURNEY_STORAGE_KEY = "cybersafe_quest_player_journey_v2";
-const PLAYER_UUID_KEY = "cybersafe_player_uuid_v1";
+const GUEST_STORAGE_KEY = "cybersafe_quest_guest_journey_v3";
+const GUEST_UUID_KEY = "cybersafe_guest_uuid_v1";
 
-function getOrCreatePlayerId(): string {
+function getOrCreateGuestId(): string {
   if (typeof window === "undefined") return "00000000-0000-0000-0000-000000000001";
   try {
-    let pid = localStorage.getItem(PLAYER_UUID_KEY);
+    let pid = localStorage.getItem(GUEST_UUID_KEY);
     if (!pid) {
       pid = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
         const r = (Math.random() * 16) | 0;
         const v = c === "x" ? r : (r & 0x3) | 0x8;
         return v.toString(16);
       });
-      localStorage.setItem(PLAYER_UUID_KEY, pid);
+      localStorage.setItem(GUEST_UUID_KEY, pid);
     }
     return pid;
   } catch {
@@ -27,101 +27,143 @@ function getOrCreatePlayerId(): string {
 }
 
 const DEFAULT_PROFILE: PlayerProfile = {
-  name: "Nguyễn Anh Đức",
+  name: "Người Học An Toàn Số",
   avatarId: "guardian",
   avatarTitle: "Vệ Binh An Toàn Gia Đình",
-  role: "Học sinh 11E2 THPT Chuyên Ngoại Ngữ",
-  joinedDate: "Khóa Huấn Luyện 2026",
+  role: "Học Viên",
+  joinedDate: "Khóa Rèn Luyện 2026",
 };
 
 export function usePlayerJourney() {
+  const { user, profile: authProfile, refreshProfile } = useAuth();
+
   const [profile, setProfile] = useState<PlayerProfile>(DEFAULT_PROFILE);
   const [unlockedLevelIndex, setUnlockedLevelIndex] = useState<number>(0); // 0-indexed (0 = Level 1)
   const [completedLevels, setCompletedLevels] = useState<Record<number, LevelProgress>>({});
   const [totalXp, setTotalXp] = useState<number>(0);
-  const [streakDays, setStreakDays] = useState<number>(3);
+  const [streakDays, setStreakDays] = useState<number>(1);
   const [isJuryUnlockedAll, setIsJuryUnlockedAll] = useState<boolean>(false);
   const [isLoaded, setIsLoaded] = useState<boolean>(false);
 
-  // Load from localStorage on mount & initial sync to Supabase
+  // Active account ID: user.id nếu đã đăng nhập, hoặc guestId nếu là khách
+  const activeUserId = user ? user.id : getOrCreateGuestId();
+  const currentUserIdRef = useRef<string>(activeUserId);
+  currentUserIdRef.current = activeUserId;
+
+  // TẢI TIẾN TRÌNH THEO TỪNG TÀI KHOẢN (KHI CHUYỂN ĐỔI USER HOẶC VÀO APP)
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    try {
-      const pid = getOrCreatePlayerId();
-      const saved = localStorage.getItem(JOURNEY_STORAGE_KEY);
-      let curProfile = DEFAULT_PROFILE;
-      let curXp = 0;
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed.profile) {
-          curProfile = parsed.profile;
-          setProfile(parsed.profile);
+    let isCancelled = false;
+
+    async function loadAccountProgress() {
+      setIsLoaded(false);
+
+      if (user && supabase) {
+        // === 1. TÀI KHOẢN ĐÃ ĐĂNG NHẬP: TẢI TRỰC TIẾP TỪ SUPABASE CLOUD ===
+        try {
+          // Lấy hồ sơ tài khoản
+          const userAvatarObj =
+            AVATAR_OPTIONS.find((a) => a.id === authProfile?.avatar_id) || AVATAR_OPTIONS[0];
+
+          const userProfile: PlayerProfile = {
+            name: authProfile?.display_name || user.email?.split("@")[0] || "Học Viên",
+            avatarId: authProfile?.avatar_id || "guardian",
+            avatarTitle: userAvatarObj.title,
+            role:
+              authProfile?.target_group === "student"
+                ? "Học sinh / Sinh viên"
+                : authProfile?.target_group === "elder"
+                ? "Người cao tuổi"
+                : "Học viên",
+            joinedDate: new Date(user.created_at || Date.now()).toLocaleDateString("vi-VN"),
+          };
+
+          // Lấy toàn bộ tiến trình ải của tài khoản này từ bảng user_progress
+          const { data: progressRows, error: progressErr } = await supabase
+            .from("user_progress")
+            .select("*")
+            .eq("user_id", user.id);
+
+          const loadedLevels: Record<number, LevelProgress> = {};
+          let maxPassedGlobalIdx = 0;
+          let calculatedXp = 0;
+
+          if (!progressErr && progressRows) {
+            progressRows.forEach((row: any) => {
+              const gIdx = OFFICIAL_QUESTION_BANK.findIndex(
+                (s) => s.scenario_id === row.scenario_id
+              );
+              if (gIdx !== -1) {
+                loadedLevels[gIdx] = {
+                  levelIndex: gIdx,
+                  scenarioId: row.scenario_id,
+                  completed: true,
+                  passedSafely: Boolean(row.passed_safely),
+                  score: Number(row.score) || 0,
+                  stars: Number(row.stars) || (row.passed_safely ? 2 : 0),
+                  completedAt: row.completed_at,
+                };
+                calculatedXp += Number(row.score) || 0;
+                if (row.passed_safely && gIdx + 1 > maxPassedGlobalIdx) {
+                  maxPassedGlobalIdx = Math.min(38, gIdx + 1);
+                }
+              }
+            });
+          }
+
+          if (!isCancelled) {
+            setProfile(userProfile);
+            setCompletedLevels(loadedLevels);
+            setUnlockedLevelIndex(maxPassedGlobalIdx);
+            setTotalXp(authProfile?.total_score || calculatedXp);
+            setStreakDays(authProfile?.streak_days || 1);
+          }
+        } catch (err) {
+          console.warn("Lỗi khi tải tiến trình tài khoản từ Supabase:", err);
         }
-        if (typeof parsed.unlockedLevelIndex === "number") setUnlockedLevelIndex(parsed.unlockedLevelIndex);
-        if (parsed.completedLevels) setCompletedLevels(parsed.completedLevels);
-        if (typeof parsed.totalXp === "number") {
-          curXp = parsed.totalXp;
-          setTotalXp(parsed.totalXp);
+      } else {
+        // === 2. CHẾ ĐỘ KHÁCH (GUEST): TẢI TIẾN TRÌNH CỦA KHÁCH TỪ LOCALSTORAGE ===
+        try {
+          const guestKey = `${GUEST_STORAGE_KEY}_${activeUserId}`;
+          const saved = localStorage.getItem(guestKey);
+          if (saved) {
+            const parsed = JSON.parse(saved);
+            if (!isCancelled) {
+              if (parsed.profile) setProfile(parsed.profile);
+              if (typeof parsed.unlockedLevelIndex === "number")
+                setUnlockedLevelIndex(parsed.unlockedLevelIndex);
+              if (parsed.completedLevels) setCompletedLevels(parsed.completedLevels);
+              if (typeof parsed.totalXp === "number") setTotalXp(parsed.totalXp);
+              if (typeof parsed.streakDays === "number") setStreakDays(parsed.streakDays);
+              if (typeof parsed.isJuryUnlockedAll === "boolean")
+                setIsJuryUnlockedAll(parsed.isJuryUnlockedAll);
+            }
+          } else {
+            if (!isCancelled) {
+              setProfile(DEFAULT_PROFILE);
+              setCompletedLevels({});
+              setUnlockedLevelIndex(0);
+              setTotalXp(0);
+              setStreakDays(1);
+            }
+          }
+        } catch (err) {
+          console.warn("Lỗi đọc tiến trình khách:", err);
         }
-        if (typeof parsed.streakDays === "number") setStreakDays(parsed.streakDays);
-        if (typeof parsed.isJuryUnlockedAll === "boolean") setIsJuryUnlockedAll(parsed.isJuryUnlockedAll);
       }
 
-      // Sync guest profile to Supabase user_profiles
-      syncUserProfileToSupabase({
-        id: pid,
-        displayName: curProfile.name,
-        targetGroup: "general",
-        totalScore: curXp,
-      }).catch(() => {});
-    } catch (e) {
-      console.warn("Could not load player journey from localStorage", e);
-    } finally {
-      setIsLoaded(true);
+      if (!isCancelled) setIsLoaded(true);
     }
-  }, []);
 
-  // Save to localStorage & sync profile to Supabase
-  const saveState = useCallback(
-    (
-      newProfile: PlayerProfile,
-      newUnlockedIdx: number,
-      newCompleted: Record<number, LevelProgress>,
-      newXp: number,
-      newJury: boolean
-    ) => {
-      if (typeof window === "undefined") return;
-      try {
-        const pid = getOrCreatePlayerId();
-        localStorage.setItem(
-          JOURNEY_STORAGE_KEY,
-          JSON.stringify({
-            profile: newProfile,
-            unlockedLevelIndex: newUnlockedIdx,
-            completedLevels: newCompleted,
-            totalXp: newXp,
-            streakDays,
-            isJuryUnlockedAll: newJury,
-          })
-        );
+    loadAccountProgress();
 
-        // Cập nhật lên Supabase user_profiles
-        syncUserProfileToSupabase({
-          id: pid,
-          displayName: newProfile.name,
-          targetGroup: "general",
-          totalScore: newXp,
-        }).catch(() => {});
-      } catch (e) {
-        console.warn("Could not save player journey to localStorage", e);
-      }
-    },
-    [streakDays]
-  );
+    return () => {
+      isCancelled = true;
+    };
+  }, [user, authProfile]);
 
-  // Update profile
+  // Cập nhật hồ sơ tài khoản
   const updateProfile = useCallback(
-    (name: string, avatarId: string) => {
+    async (name: string, avatarId: string) => {
       const avatarObj = AVATAR_OPTIONS.find((a) => a.id === avatarId) || AVATAR_OPTIONS[0];
       const newProfile: PlayerProfile = {
         ...profile,
@@ -130,14 +172,44 @@ export function usePlayerJourney() {
         avatarTitle: avatarObj.title,
       };
       setProfile(newProfile);
-      saveState(newProfile, unlockedLevelIndex, completedLevels, totalXp, isJuryUnlockedAll);
+
+      if (user && supabase) {
+        // Cập nhật lên Supabase user_profiles của tài khoản
+        try {
+          await supabase
+            .from("user_profiles")
+            .update({
+              display_name: newProfile.name,
+              avatar_id: avatarId,
+              updated_at: new Date().toISOString(),
+            })
+            .eq("id", user.id);
+          refreshProfile();
+        } catch (e) {
+          console.warn("Lỗi cập nhật user_profiles:", e);
+        }
+      } else {
+        // Lưu cho khách
+        const guestKey = `${GUEST_STORAGE_KEY}_${activeUserId}`;
+        localStorage.setItem(
+          guestKey,
+          JSON.stringify({
+            profile: newProfile,
+            unlockedLevelIndex,
+            completedLevels,
+            totalXp,
+            streakDays,
+            isJuryUnlockedAll,
+          })
+        );
+      }
     },
-    [profile, unlockedLevelIndex, completedLevels, totalXp, isJuryUnlockedAll, saveState]
+    [profile, user, refreshProfile, activeUserId, unlockedLevelIndex, completedLevels, totalXp, streakDays, isJuryUnlockedAll]
   );
 
-  // Record Level Outcome
+  // GHI NHẬN KẾT QUẢ VƯỢT ẢI (ĐỒNG BỘ TRỰC TIẾP VÀO USER_PROGRESS CỦA TÀI KHOẢN ĐÓ)
   const recordLevelResult = useCallback(
-    (levelIndex: number, scenarioId: string, passed: boolean, score: number) => {
+    async (levelIndex: number, scenarioId: string, passed: boolean, score: number) => {
       let stars = 1;
       if (passed && score >= 90) stars = 3;
       else if (passed && score >= 60) stars = 2;
@@ -160,30 +232,65 @@ export function usePlayerJourney() {
         },
       };
 
-      // If passed, unlock next level
+      // Mở khóa ải kế tiếp nếu đạt chuẩn
       let nextUnlocked = unlockedLevelIndex;
       if (passed && levelIndex >= unlockedLevelIndex && levelIndex < 38) {
         nextUnlocked = levelIndex + 1;
         setUnlockedLevelIndex(nextUnlocked);
       }
 
-      // Add XP
+      // Tích lũy XP
       const addedXp = existing ? (score > existing.score ? score - existing.score : 0) : score;
       const nextXp = totalXp + addedXp;
 
       setCompletedLevels(updatedLevels);
       setTotalXp(nextXp);
 
-      saveState(profile, nextUnlocked, updatedLevels, nextXp, isJuryUnlockedAll);
+      if (user && supabase) {
+        // === ĐỒNG BỘ LÊN CLOUD CHO TÀI KHOẢN NÀY ===
+        try {
+          // 1. Ghi hoặc cập nhật vào bảng user_progress theo (user_id, scenario_id)
+          await supabase.from("user_progress").upsert(
+            {
+              user_id: user.id,
+              scenario_id: scenarioId,
+              score: newScore,
+              passed_safely: passed || (existing ? existing.passedSafely : false),
+              stars: newStars,
+              attempts: (existing ? (existing as any).attempts || 1 : 0) + 1,
+              completed_at: new Date().toISOString(),
+            },
+            { onConflict: "user_id,scenario_id" }
+          );
 
-      // Đồng bộ tiến độ lên Supabase Cloud (bất đồng bộ)
-      const pid = getOrCreatePlayerId();
-      saveUserProgressToSupabase({
-        scenarioId,
-        score,
-        passedSafely: passed,
-        userId: pid,
-      }).catch(() => {});
+          // 2. Cập nhật tổng điểm XP trong user_profiles
+          await supabase
+            .from("user_profiles")
+            .update({
+              total_score: nextXp,
+              updated_at: new Date().toISOString(),
+            })
+            .eq("id", user.id);
+        } catch (err) {
+          console.warn("Lỗi lưu tiến trình tài khoản lên Supabase:", err);
+        }
+      } else {
+        // === LƯU TIẾN TRÌNH CHO KHÁCH ===
+        const guestKey = `${GUEST_STORAGE_KEY}_${activeUserId}`;
+        try {
+          localStorage.setItem(
+            guestKey,
+            JSON.stringify({
+              profile,
+              unlockedLevelIndex: nextUnlocked,
+              completedLevels: updatedLevels,
+              totalXp: nextXp,
+              streakDays,
+              isJuryUnlockedAll,
+            })
+          );
+        } catch {}
+      }
 
       return {
         isNewUnlock: passed && nextUnlocked > unlockedLevelIndex,
@@ -191,33 +298,32 @@ export function usePlayerJourney() {
         nextLevelIndex: nextUnlocked,
       };
     },
-    [completedLevels, unlockedLevelIndex, totalXp, profile, isJuryUnlockedAll, saveState]
+    [completedLevels, unlockedLevelIndex, totalXp, user, activeUserId, profile, streakDays, isJuryUnlockedAll]
   );
 
 
   // Toggle Jury Mode (unlock all 39 levels)
   const toggleJuryUnlockedAll = useCallback(() => {
-    setIsJuryUnlockedAll((prev) => {
-      const next = !prev;
-      saveState(profile, unlockedLevelIndex, completedLevels, totalXp, next);
-      return next;
-    });
-  }, [profile, unlockedLevelIndex, completedLevels, totalXp, saveState]);
+    setIsJuryUnlockedAll((prev) => !prev);
+  }, []);
 
   // Reset Progress
-  const resetJourney = useCallback(() => {
+  const resetJourney = useCallback(async () => {
     setUnlockedLevelIndex(0);
     setCompletedLevels({});
     setTotalXp(0);
     setIsJuryUnlockedAll(false);
-    if (typeof window !== "undefined") {
+    if (user && supabase) {
       try {
-        localStorage.removeItem(JOURNEY_STORAGE_KEY);
-      } catch (e) {
-        // ignore
-      }
+        await supabase.from("user_progress").delete().eq("user_id", user.id);
+        await supabase.from("user_profiles").update({ total_score: 0 }).eq("id", user.id);
+      } catch {}
+    } else if (typeof window !== "undefined") {
+      try {
+        localStorage.removeItem(`${GUEST_STORAGE_KEY}_${activeUserId}`);
+      } catch {}
     }
-  }, []);
+  }, [user, activeUserId]);
 
   const isLevelUnlocked = useCallback(
     (idx: number) => {

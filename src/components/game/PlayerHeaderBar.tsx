@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { PlayerProfile } from "@/types/scenario";
 import { AVATAR_OPTIONS, AvatarOption } from "@/data/avatars";
+import { useAuth } from "@/context/AuthContext";
 import {
   Shield,
   Award,
@@ -19,8 +20,6 @@ import {
   Cloud,
   ChevronRight,
 } from "lucide-react";
-
-
 
 interface PlayerHeaderBarProps {
   profile: PlayerProfile;
@@ -46,7 +45,6 @@ interface PlayerHeaderBarProps {
   onOpenDatabaseInfo?: () => void;
 }
 
-
 export function PlayerHeaderBar({
   profile,
   totalXp,
@@ -66,6 +64,7 @@ export function PlayerHeaderBar({
   onContinueActiveLevel,
   onOpenDatabaseInfo,
 }: PlayerHeaderBarProps) {
+  const { user, openAuthModal } = useAuth();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editName, setEditName] = useState(profile.name);
   const [selectedAvatarId, setSelectedAvatarId] = useState(profile.avatarId);
@@ -120,6 +119,24 @@ export function PlayerHeaderBar({
                 <span className="text-slate-500 font-medium">
                   {currentAvatar.title}
                 </span>
+                {user ? (
+                  <span
+                    className="flex items-center gap-1 px-2.5 py-0.5 rounded-full font-bold border border-sky-200 bg-sky-50 text-sky-800 text-[11px]"
+                    title={`Đang đăng nhập bằng tài khoản: ${user.email}`}
+                  >
+                    <Check className="w-3 h-3 text-sky-600" />
+                    <span className="max-w-[130px] truncate">{user.email?.split("@")[0]}</span>
+                  </span>
+                ) : (
+                  <button
+                    onClick={() => openAuthModal("signin")}
+                    className="flex items-center gap-1 px-2.5 py-0.5 rounded-full font-bold border border-amber-300 bg-amber-50 text-amber-900 hover:bg-amber-100 text-[11px] transition-colors cursor-pointer"
+                    title="Đăng nhập để mỗi tài khoản có 1 tiến trình và lưu vĩnh viễn trên Supabase"
+                  >
+                    <User className="w-3 h-3 text-amber-600" />
+                    <span>Lưu Tiến Trình Cloud</span>
+                  </button>
+                )}
                 {onOpenDatabaseInfo && (
                   <button
                     onClick={onOpenDatabaseInfo}
