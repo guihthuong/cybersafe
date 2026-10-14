@@ -24,6 +24,7 @@ export interface CategoryMeta {
   scenariosCount: number;
   vulnerableTarget: string;
   warningNote: string;
+  imageUrl: string;
 }
 
 export const CATEGORIES_DATA: CategoryMeta[] = [
@@ -34,6 +35,7 @@ export const CATEGORIES_DATA: CategoryMeta[] = [
     scenariosCount: 4,
     vulnerableTarget: "Người cao tuổi",
     warningNote: "Dọa bắt giam, dọa rửa tiền, ép chuyển tiền vào tài khoản tạm giữ",
+    imageUrl: "/images/fake police.png",
   },
   {
     id: "bank_otp_fraud",
@@ -42,6 +44,7 @@ export const CATEGORIES_DATA: CategoryMeta[] = [
     scenariosCount: 5,
     vulnerableTarget: "Mọi đối tượng",
     warningNote: "Tin nhắn SMS mạo danh, gửi link giả mạo đánh cắp mã OTP và mật khẩu",
+    imageUrl: "/images/fake mobile banking.png",
   },
   {
     id: "lottery_reward_trap",
@@ -50,6 +53,7 @@ export const CATEGORIES_DATA: CategoryMeta[] = [
     scenariosCount: 3,
     vulnerableTarget: "Người lớn tuổi & Nội trợ",
     warningNote: "Thông báo trúng thưởng lớn, yêu cầu đóng thuế hoặc cọc trước",
+    imageUrl: "/images/fake lottery prize trap.png",
   },
   {
     id: "easy_job_high_pay",
@@ -58,6 +62,7 @@ export const CATEGORIES_DATA: CategoryMeta[] = [
     scenariosCount: 4,
     vulnerableTarget: "Học sinh, sinh viên",
     warningNote: "Nhiệm vụ xem video giật đơn, nạp tiền nhỏ rút được tiền lớn bị khóa",
+    imageUrl: "/images/fake job scam trap.png",
   },
   {
     id: "romance_investment_pig",
@@ -66,6 +71,7 @@ export const CATEGORIES_DATA: CategoryMeta[] = [
     scenariosCount: 3,
     vulnerableTarget: "Thanh niên & Người độc thân",
     warningNote: "Làm quen thân mật, rủ rê nạp tiền sàn đầu tư ảo rồi chiếm đoạt",
+    imageUrl: "/images/falling stock chart scam.png",
   },
   {
     id: "deepfake_video_call",
@@ -74,6 +80,7 @@ export const CATEGORIES_DATA: CategoryMeta[] = [
     scenariosCount: 4,
     vulnerableTarget: "Phụ huynh & Người già",
     warningNote: "Cuộc gọi video ngắn mờ ảo mượn tiền gấp vì tai nạn cấp cứu",
+    imageUrl: "/images/imposter wearing face mask phone call.png",
   },
   {
     id: "malicious_app_link",
@@ -82,6 +89,7 @@ export const CATEGORIES_DATA: CategoryMeta[] = [
     scenariosCount: 4,
     vulnerableTarget: "Người dùng điện thoại Android",
     warningNote: "Link mạo danh VNeID/Thuế cài file .apk chiếm quyền điều khiển điện thoại",
+    imageUrl: "/images/hacker.png",
   },
   {
     id: "travel_ticket_scam",
@@ -90,6 +98,7 @@ export const CATEGORIES_DATA: CategoryMeta[] = [
     scenariosCount: 3,
     vulnerableTarget: "Gia đình đi nghỉ hè",
     warningNote: "Fanpage giả mạo hãng lữ hành, nhận tiền cọc vé rồi chặn liên lạc",
+    imageUrl: "/images/romance scam.png",
   },
   {
     id: "ecommerce_fake_shipper",
@@ -98,6 +107,7 @@ export const CATEGORIES_DATA: CategoryMeta[] = [
     scenariosCount: 3,
     vulnerableTarget: "Người hay mua online",
     warningNote: "Giao bưu kiện không đặt, hối thúc chuyển khoản tiền hàng gấp",
+    imageUrl: "/images/qr scam.png",
   },
   {
     id: "social_account_takeover",
@@ -106,6 +116,7 @@ export const CATEGORIES_DATA: CategoryMeta[] = [
     scenariosCount: 3,
     vulnerableTarget: "Bạn bè & Người thân",
     warningNote: "Chiếm quyền Zalo/Facebook, nhắn tin hỏi vay tiền vì đang kẹt gấp",
+    imageUrl: "/images/hacker stealing social media profile.png",
   },
   {
     id: "fake_scholarship_course",
@@ -114,6 +125,7 @@ export const CATEGORIES_DATA: CategoryMeta[] = [
     scenariosCount: 3,
     vulnerableTarget: "Phụ huynh có con nhỏ",
     warningNote: "Mạo danh ban tổ chức trại hè uy tín, yêu cầu đóng lệ phí khảo sát lớn",
+    imageUrl: "/images/false rumor fake news.png",
   },
 ];
 
@@ -146,7 +158,7 @@ export function CategoryGrid() {
         </p>
       </div>
 
-      {/* Grid Cards - Clean, Readable, Human-crafted */}
+      {/* Grid Cards - Clean, Readable, Full uncropped illustrations */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {CATEGORIES_DATA.map((cat, idx) => {
           const groupCode = `Đề tài ${idx < 9 ? "0" : ""}${idx + 1}`;
@@ -156,47 +168,53 @@ export function CategoryGrid() {
           return (
             <div
               key={cat.id}
-              className="rounded-3xl bg-white border border-slate-200 hover:border-slate-300 hover-lift p-6 flex flex-col justify-between transition-all group"
+              className="rounded-3xl bg-white border border-slate-200 hover:border-sky-300 hover:shadow-xl p-5 flex flex-col justify-between transition-all duration-300 group space-y-4"
             >
               {/* Card Top: Code Pill & Icon */}
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className={`w-11 h-11 rounded-2xl ${iconConfig.bg} border flex items-center justify-center`}>
-                    <Icon className={`w-5 h-5 ${iconConfig.color}`} />
+              <div className="flex items-center justify-between pb-1">
+                <div className="flex items-center gap-2">
+                  <div className={`w-8 h-8 rounded-xl ${iconConfig.bg} border flex items-center justify-center shrink-0`}>
+                    <Icon className={`w-4 h-4 ${iconConfig.color}`} />
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono text-xs font-bold text-slate-500">
-                      {groupCode}
-                    </span>
-                    <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700">
-                      {cat.scenariosCount} ải
-                    </span>
-                  </div>
+                  <span className="font-mono text-xs font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md">
+                    {groupCode}
+                  </span>
                 </div>
+                <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-sky-50 text-sky-700 border border-sky-200">
+                  {cat.scenariosCount} ải
+                </span>
+              </div>
 
-                {/* Title */}
-                <div>
-                  <h3 className="text-base sm:text-lg font-bold text-slate-900 group-hover:text-sky-700 transition-colors leading-snug">
-                    {cat.name}
-                  </h3>
-                </div>
+              {/* Full Uncropped Illustration Image Display */}
+              <div className="w-full h-44 sm:h-48 rounded-2xl bg-slate-50/80 border border-slate-100 p-2.5 flex items-center justify-center group-hover:border-sky-200 group-hover:bg-sky-50/20 transition-all">
+                <img
+                  src={encodeURI(cat.imageUrl)}
+                  alt={cat.name}
+                  className="w-full h-full object-contain drop-shadow-sm group-hover:scale-105 transition-transform duration-300 select-none"
+                />
+              </div>
 
-                {/* Warning note */}
+              {/* Title & Warning */}
+              <div className="space-y-2 flex-1">
+                <h3 className="text-base font-black text-slate-900 group-hover:text-sky-700 transition-colors leading-snug line-clamp-2">
+                  {cat.name}
+                </h3>
+
                 <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 text-xs text-slate-600 leading-relaxed font-medium flex items-start gap-2">
                   <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
-                  <span>{cat.warningNote}</span>
+                  <span className="line-clamp-2">{cat.warningNote}</span>
                 </div>
               </div>
 
               {/* Bottom Target & Action */}
-              <div className="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between text-xs">
-                <span className="text-slate-500 font-medium">
-                  Nhắm đến: <strong className="text-slate-800">{cat.vulnerableTarget}</strong>
+              <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+                <span className="text-slate-500 font-medium truncate max-w-[170px]">
+                  Nhắm: <strong className="text-slate-800">{cat.vulnerableTarget}</strong>
                 </span>
 
                 <Link
                   href={`/play/chuong-${idx + 1}`}
-                  className="text-sky-700 hover:text-sky-900 font-bold flex items-center gap-1 group-hover:translate-x-1 transition-transform"
+                  className="px-3.5 py-1.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold flex items-center gap-1.5 shadow-xs transition-all shrink-0"
                 >
                   <span>Luyện tập</span>
                   <ArrowRight className="w-3.5 h-3.5" />
