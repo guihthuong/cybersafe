@@ -14,7 +14,69 @@ interface PuzzleJourneyMapProps {
   globalStartIndex?: number; // 0-indexed offset if rendering a sub-chapter
 }
 
-function getScenarioScamArt(scenario: Scenario, relIdx: number): { image: string; label: string } {
+const SCENARIO_ART_MAP: Record<string, { image: string; label: string }> = {
+  // Chương 1: Giả Mạo Cơ Quan Chức Năng
+  "Q1.1": { image: "/images/fake police.png", label: "Mạo danh Công an điều tra" },
+  "Q1.2": { image: "/images/hacker.png", label: "Dọa bắt cóc online & tống tiền" },
+  "Q1.3": { image: "/images/stealing OTP.png", label: "Mã độc VNeID giả mạo" },
+
+  // Chương 2: Giả Mạo Ngân Hàng & Tài Chính (Hoàn toàn khác nhau, KHÔNG TRÙNG LẶP)
+  "Q2.1": { image: "/images/fake mobile banking.png", label: "SMS mạo danh link ngân hàng" },
+  "Q2.2": { image: "/images/imposter wearing face mask phone call.png", label: "Sinh trắc học giả mạo" },
+  "Q2.3": { image: "/images/stealing OTP.png", label: "Chiếm đoạt Smart OTP" },
+
+  // Chương 3: Lừa Đảo Việc Làm & Hoa Hồng CTV
+  "Q3.1": { image: "/images/fake job scam trap.png", label: "Tuyển CTV giật đơn Shopee" },
+  "Q3.2": { image: "/images/falling stock chart scam.png", label: "Nạp tiền nâng VIP làm nhiệm vụ" },
+  "Q3.3": { image: "/images/fake lottery prize trap.png", label: "Đa cấp tài chính trá hình" },
+
+  // Chương 4: Deepfake & Trí Tuệ Nhân Tạo AI
+  "Q4.1": { image: "/images/imposter wearing face mask phone call.png", label: "Deepfake gọi video cấp cứu" },
+  "Q4.2": { image: "/images/romance scam.png", label: "Giả giọng nói AI mượn tiền" },
+  "Q4.3": { image: "/images/falling stock chart scam.png", label: "Sàn đầu tư vàng online 5%" },
+
+  // Chương 5: Lừa Đảo Tình Cảm & Sàn Đầu Tư
+  "Q5.1": { image: "/images/romance scam.png", label: "Làm quen hẹn hò qua mạng" },
+  "Q5.2": { image: "/images/falling stock chart scam.png", label: "Bẫy 'mổ lợn' sàn Forex ảo" },
+  "Q5.3": { image: "/images/fake lottery prize trap.png", label: "Chặn rút tiền ép nộp thuế" },
+
+  // Chương 6: Mã Độc Tống Tiền & File .APK Lạ
+  "Q6.1": { image: "/images/hacker.png", label: "Cài tệp .APK ngoài luồng" },
+  "Q6.2": { image: "/images/stealing OTP.png", label: "Chiếm quyền Trợ năng máy" },
+  "Q6.3": { image: "/images/cybersecurity.png", label: "Mã độc giám sát màn hình" },
+
+  // Chương 7: Lừa Đảo TMĐT & Shipper
+  "Q7.1": { image: "/images/fake lottery prize trap.png", label: "Trúng thưởng xe máy SH 0 đồng" },
+  "Q7.2": { image: "/images/qr scam.png", label: "Shipper giả giục chuyển tiền" },
+  "Q7.3": { image: "/images/fake mobile banking.png", label: "Mua hàng qua link giả mạo" },
+
+  // Chương 8: Lừa Đảo Dịch Vụ Công & Bảo Hiểm
+  "Q8.1": { image: "/images/false rumor fake news.png", label: "Lỗi hộ khẩu điện tử VNeID" },
+  "Q8.2": { image: "/images/imposter wearing face mask phone call.png", label: "Hỗ trợ định danh mức 2 qua mạng" },
+  "Q8.3": { image: "/images/fake mobile banking.png", label: "Hoàn tiền trợ cấp thất nghiệp" },
+
+  // Chương 9: Giả Mạo Từ Thiện & Cứu Trợ
+  "Q9.1": { image: "/images/qr scam.png", label: "Mã QR từ thiện bão lũ giả" },
+  "Q9.2": { image: "/images/false rumor fake news.png", label: "Kêu gọi ủng hộ tài khoản cá nhân" },
+  "Q9.3": { image: "/images/fake police.png", label: "Mạo danh cơ quan nhà nước uy tín" },
+
+  // Chương 10: Chiếm Đoạt Tài Khoản MXH & Mượn Tiền
+  "Q10.1": { image: "/images/hacker stealing social media profile.png", label: "Hack Facebook mượn tiền" },
+  "Q10.2": { image: "/images/stealing OTP.png", label: "Nhờ chuyển khoản qua tài khoản thứ ba" },
+  "Q10.3": { image: "/images/hacker.png", label: "Bình chọn cuộc thi chiếm token" },
+
+  // Chương 11: Lừa Đảo Vé Máy Bay & Combo Du Lịch
+  "Q11.1": { image: "/images/romance scam.png", label: "Vé máy bay Tết giá rẻ bất ngờ" },
+  "Q11.2": { image: "/images/falling stock chart scam.png", label: "Combo phòng khách sạn 5 sao giá rẻ" },
+  "Q11.3": { image: "/images/fake mobile banking.png", label: "Chuyển cọc qua tài khoản cá nhân" },
+
+  // Chuyên Đề Đối Chứng C
+  "C1": { image: "/images/fake police.png", label: "Phân biệt cuộc gọi chính thống" },
+  "C2": { image: "/images/cybersecurity.png", label: "Kiểm tra tên miền an toàn" },
+  "C3": { image: "/images/cybersecurity.png", label: "Nguyên tắc kiểm chứng đa kênh" },
+};
+
+function getScenarioScamArt(scenario: Scenario): { image: string; label: string } {
   // If stimulus has explicit image_url
   if (scenario.stimulus?.image_url) {
     return {
@@ -24,48 +86,11 @@ function getScenarioScamArt(scenario: Scenario, relIdx: number): { image: string
   }
 
   const sid = scenario.scenario_id;
-  const cat = scenario.category;
-
-  if (cat === "fake_police_authority") {
-    if (sid === "Q1.3") return { image: "/images/stealing OTP.png", label: "Mã độc VNeID giả" };
-    if (sid === "Q1.2") return { image: "/images/hacker.png", label: "Dọa bắt giam qua mạng" };
-    return { image: "/images/fake police.png", label: "Mạo danh Công an điều tra" };
-  }
-  if (cat === "bank_otp_fraud") {
-    if (sid === "Q2.3") return { image: "/images/stealing OTP.png", label: "Chiếm đoạt Smart OTP" };
-    if (sid === "Q2.2") return { image: "/images/fake mobile banking.png", label: "Sinh trắc học giả mạo" };
-    return { image: "/images/fake mobile banking.png", label: "SMS mạo danh ngân hàng" };
-  }
-  if (cat === "easy_job_high_pay") {
-    return { image: "/images/fake job scam trap.png", label: "Bẫy việc nhẹ lương cao" };
-  }
-  if (cat === "deepfake_video_call") {
-    return { image: "/images/imposter wearing face mask phone call.png", label: "Deepfake gọi video" };
-  }
-  if (cat === "romance_investment_pig") {
-    if (relIdx % 2 === 0) return { image: "/images/romance scam.png", label: "Bẫy tình cảm hẹn hò" };
-    return { image: "/images/falling stock chart scam.png", label: "Sàn đầu tư tài chính ảo" };
-  }
-  if (cat === "malicious_app_link") {
-    return { image: "/images/stealing OTP.png", label: "Cài tệp .APK lạ" };
-  }
-  if (cat === "lottery_reward_trap") {
-    return { image: "/images/fake lottery prize trap.png", label: "Bẫy trúng xe SH 0 đồng" };
-  }
-  if (cat === "ecommerce_fake_shipper") {
-    return { image: "/images/qr scam.png", label: "Bẫy mã QR độc hại" };
-  }
-  if (cat === "social_account_takeover") {
-    return { image: "/images/hacker stealing social media profile.png", label: "Hack Facebook mượn tiền" };
-  }
-  if (cat === "travel_ticket_scam") {
-    return { image: "/images/falling stock chart scam.png", label: "Vé máy bay giá rẻ ảo" };
-  }
-  if (cat === "fake_scholarship_course") {
-    return { image: "/images/false rumor fake news.png", label: "Khóa học hè quốc tế giả" };
+  if (SCENARIO_ART_MAP[sid]) {
+    return SCENARIO_ART_MAP[sid];
   }
 
-  return { image: "/images/cybersecurity.png", label: "Phòng vệ số" };
+  return { image: "/images/cybersecurity.png", label: scenario.category_name_vi.split("(")[0].trim() };
 }
 
 export function PuzzleJourneyMap({
@@ -104,7 +129,7 @@ export function PuzzleJourneyMap({
         (isFirstInTopic || prevNodeCompleted);
 
       const earnedStars = completedLevels[globalIdx]?.stars || 0;
-      const scamArt = getScenarioScamArt(scenario, relIdx);
+      const scamArt = getScenarioScamArt(scenario);
 
       return {
         relIdx,
@@ -139,18 +164,21 @@ export function PuzzleJourneyMap({
           }}
         />
 
-        {/* SVG Road Trail */}
+        {/* SVG Road Trail - Rendered with 1000px coordinate system to guarantee visible thick curvy road */}
         <svg
           className="absolute inset-0 w-full h-full pointer-events-none z-0"
+          viewBox={`0 0 1000 ${totalHeight}`}
+          preserveAspectRatio="none"
           xmlns="http://www.w3.org/2000/svg"
         >
           {nodes.map((node, i) => {
             if (i >= nodes.length - 1) return null;
             const nextNode = nodes[i + 1];
 
-            const startX = `${node.xPercent}%`;
+            // 1000-width coordinate system: left node at 250 (25%), right node at 750 (75%)
+            const startX = node.xPercent === 25 ? 250 : 750;
             const startY = node.yPixels;
-            const endX = `${nextNode.xPercent}%`;
+            const endX = nextNode.xPercent === 25 ? 250 : 750;
             const endY = nextNode.yPixels;
             const midY = (startY + endY) / 2;
 
@@ -159,31 +187,40 @@ export function PuzzleJourneyMap({
 
             return (
               <g key={`trail_${node.scenario.scenario_id}`}>
-                {/* 1. Road Bed Base */}
+                {/* 1. Road Outer Shadow / Border */}
                 <path
                   d={pathD}
                   fill="none"
-                  stroke="#e2e8f0"
-                  strokeWidth="38"
+                  stroke="#cbd5e1"
+                  strokeWidth="52"
                   strokeLinecap="round"
                 />
 
-                {/* 2. Road Surface */}
+                {/* 2. Road Surface Asphalt */}
                 <path
                   d={pathD}
                   fill="none"
-                  stroke={isSegmentCompleted ? "#ecfdf5" : "#ffffff"}
-                  strokeWidth="28"
+                  stroke={isSegmentCompleted ? "#0284c7" : "#e2e8f0"}
+                  strokeWidth="42"
                   strokeLinecap="round"
                 />
 
-                {/* 3. Center Guide Dashes */}
+                {/* 3. Road Inner Lane */}
                 <path
                   d={pathD}
                   fill="none"
-                  stroke={isSegmentCompleted ? "#10b981" : "#94a3b8"}
-                  strokeWidth="4"
-                  strokeDasharray="10 8"
+                  stroke={isSegmentCompleted ? "#38bdf8" : "#f8fafc"}
+                  strokeWidth="32"
+                  strokeLinecap="round"
+                />
+
+                {/* 4. Center Dashed Guide Line */}
+                <path
+                  d={pathD}
+                  fill="none"
+                  stroke={isSegmentCompleted ? "#ffffff" : "#94a3b8"}
+                  strokeWidth="5"
+                  strokeDasharray="16 12"
                   strokeLinecap="round"
                 />
               </g>
@@ -290,7 +327,7 @@ export function PuzzleJourneyMap({
                 <div className="mt-2 flex flex-col items-center gap-1 max-w-[120px] text-center sm:hidden">
                   <div className="w-12 h-12 rounded-xl bg-white border border-slate-200 p-1 flex items-center justify-center shadow-xs">
                     <img
-                      src={node.scamArt.image}
+                      src={encodeURI(node.scamArt.image)}
                       alt={node.scamArt.label}
                       className="w-full h-full object-contain"
                     />
@@ -326,7 +363,7 @@ export function PuzzleJourneyMap({
                   {/* The Milestone Scam Image Thumbnail */}
                   <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center p-2 shrink-0 group-hover:scale-105 transition-transform">
                     <img
-                      src={node.scamArt.image}
+                      src={encodeURI(node.scamArt.image)}
                       alt={node.scamArt.label}
                       className="w-full h-full object-contain drop-shadow-sm select-none"
                     />
