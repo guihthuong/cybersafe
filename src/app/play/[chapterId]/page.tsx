@@ -178,6 +178,31 @@ export default function ChapterPage({ params }: ChapterPageProps) {
           </div>
         </div>
 
+        {/* Topic Artwork Hero Banner */}
+        <div className="relative w-full h-44 sm:h-52 rounded-3xl overflow-hidden bg-slate-900 border border-slate-200/90 shadow-sm flex items-end">
+          <img
+            src={encodeURI(chapter.imageUrl)}
+            alt={chapter.title}
+            className="absolute inset-0 w-full h-full object-cover object-center"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/45 to-transparent" />
+
+          <div className="relative z-10 p-5 sm:p-6 text-white space-y-1 w-full">
+            <div className="flex items-center gap-2">
+              <span className="font-mono text-xs font-black text-sky-300 bg-sky-950/70 border border-sky-400/30 px-2.5 py-0.5 rounded-md backdrop-blur-md">
+                {chapter.topicCode}
+              </span>
+              <span className="text-xs text-slate-300 font-medium">
+                {chapter.landmarkName}
+              </span>
+            </div>
+            <h2 className="text-xl sm:text-2xl font-black tracking-tight">{chapter.title}</h2>
+            <p className="text-xs sm:text-sm text-slate-300 font-medium max-w-xl line-clamp-2">
+              {chapter.description}
+            </p>
+          </div>
+        </div>
+
         {/* Winding Road Puzzle for this Chapter */}
         <PuzzleJourneyMap
           scenarios={chapterScenarios}

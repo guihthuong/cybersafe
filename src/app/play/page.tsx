@@ -194,21 +194,25 @@ export default function PlayPage() {
                 return (
                   <div
                     key={chapter.id}
-                    className="rounded-3xl bg-white border border-slate-200 hover:border-slate-300 hover-lift p-6 shadow-xs flex flex-col justify-between space-y-5 transition-all group"
+                    className="rounded-3xl bg-white border border-slate-200/90 hover:border-sky-300 hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col justify-between group"
                   >
-                    <div className="space-y-3">
-                      {/* Topic Header: Code Pill, Scenario Count & Stars */}
-                      <div className="flex items-center justify-between gap-2 pb-1">
-                        <div className="flex items-center gap-2">
-                          <span className="font-mono text-xs font-bold px-2.5 py-0.5 rounded-lg bg-sky-50 text-sky-800 border border-sky-200">
-                            {chapter.topicCode}
-                          </span>
-                          <span className="text-xs font-medium text-slate-500">
-                            {chapterScenarios.length} ải
-                          </span>
-                        </div>
+                    {/* Chapter Image Illustration Banner */}
+                    <div className="relative w-full h-44 bg-slate-900 overflow-hidden">
+                      <img
+                        src={encodeURI(chapter.imageUrl)}
+                        alt={chapter.title}
+                        className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
+                        loading="lazy"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-transparent to-black/30" />
 
-                        <div className="flex items-center gap-1 text-xs font-bold text-amber-500">
+                      {/* Topic Header: Code Pill, Scenario Count & Stars floating over image */}
+                      <div className="absolute top-3 left-3 right-3 flex items-center justify-between">
+                        <span className="font-mono text-xs font-black px-2.5 py-1 rounded-lg bg-black/60 backdrop-blur-md text-white border border-white/20 shadow-xs">
+                          {chapter.topicCode}
+                        </span>
+
+                        <div className="flex items-center gap-1 text-xs font-bold text-amber-300 px-2.5 py-1 rounded-lg bg-black/60 backdrop-blur-md border border-white/20 shadow-xs">
                           <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
                           <span>
                             {starsInChapter}/{totalStarsPossible}★
@@ -216,57 +220,69 @@ export default function PlayPage() {
                         </div>
                       </div>
 
-                      {/* Title & Subtitle */}
-                      <div>
-                        <h3 className="text-lg font-bold text-slate-900 group-hover:text-sky-700 transition-colors leading-snug">
-                          {chapter.title}
-                        </h3>
-                        <p className="text-xs font-semibold text-slate-500 mt-0.5">
-                          {chapter.subtitle}
+                      {/* Landmark Name & Scenario count at bottom of image */}
+                      <div className="absolute bottom-2.5 left-3 right-3 flex items-center justify-between text-white text-[11px] font-semibold">
+                        <span className="truncate drop-shadow-md text-slate-200">{chapter.landmarkName}</span>
+                        <span className="text-[10px] text-white bg-white/20 backdrop-blur-md px-2 py-0.5 rounded-md font-bold shrink-0">
+                          {chapterScenarios.length} Ải
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Card Body */}
+                    <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
+                      <div className="space-y-2">
+                        <div>
+                          <h3 className="text-base font-extrabold text-slate-900 group-hover:text-sky-700 transition-colors leading-snug line-clamp-1">
+                            {chapter.title}
+                          </h3>
+                          <p className="text-xs font-semibold text-slate-500 mt-0.5 line-clamp-1">
+                            {chapter.subtitle}
+                          </p>
+                        </div>
+
+                        {/* Description */}
+                        <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed font-medium">
+                          {chapter.description}
                         </p>
                       </div>
 
-                      {/* Description */}
-                      <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed font-medium">
-                        {chapter.description}
-                      </p>
-                    </div>
+                      {/* Progress Bar & Enter Topic Button */}
+                      <div className="space-y-3 pt-3 border-t border-slate-100">
+                        <div className="space-y-1">
+                          <div className="flex items-center justify-between text-[11px] font-bold text-slate-500">
+                            <span>
+                              Tiến độ: <strong>{completedInChapter}/{chapterScenarios.length} Ải</strong>
+                            </span>
+                            <span className={isCompleted ? "text-emerald-700 font-black" : "text-slate-600"}>
+                              {isCompleted ? "ĐÃ HOÀN TẤT ✓" : `${chapterPercent}%`}
+                            </span>
+                          </div>
+                          <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden border border-slate-200">
+                            <div
+                              className={`h-full rounded-full transition-all duration-500 ${
+                                isCompleted
+                                  ? "bg-emerald-500"
+                                  : "bg-gradient-to-r from-sky-500 to-indigo-600"
+                              }`}
+                              style={{ width: `${Math.max(4, chapterPercent)}%` }}
+                            />
+                          </div>
+                        </div>
 
-                    {/* Progress Bar & Enter Topic Button */}
-                    <div className="space-y-3 pt-3 border-t border-slate-100">
-                      <div className="space-y-1">
-                        <div className="flex items-center justify-between text-[11px] font-bold text-slate-500">
-                          <span>
-                            Tiến độ: <strong>{completedInChapter}/{chapterScenarios.length} Ải</strong>
-                          </span>
-                          <span className={isCompleted ? "text-emerald-700 font-black" : "text-slate-600"}>
-                            {isCompleted ? "ĐÃ HOÀN TẤT ✓" : `${chapterPercent}%`}
-                          </span>
-                        </div>
-                        <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden border border-slate-200">
-                          <div
-                            className={`h-full rounded-full transition-all duration-500 ${
-                              isCompleted
-                                ? "bg-emerald-500"
-                                : "bg-gradient-to-r from-sky-500 to-indigo-600"
-                            }`}
-                            style={{ width: `${Math.max(4, chapterPercent)}%` }}
-                          />
-                        </div>
+                        {/* Link to dedicated Chapter Road route */}
+                        <Link
+                          href={`/play/${chapter.id}`}
+                          className={`w-full py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-2 shadow-xs transition-all ${
+                            isCompleted
+                              ? "bg-emerald-50 text-emerald-800 border-2 border-emerald-300 hover:bg-emerald-100"
+                              : "bg-sky-600 hover:bg-sky-700 text-white border-b-2 border-sky-800 active:translate-y-0.5"
+                          }`}
+                        >
+                          <span>{isCompleted ? "Xem Lại Bản Đồ Đề Tài" : "Vào Luyện Tập Đề Tài Này"}</span>
+                          <ArrowRight className="w-4 h-4" />
+                        </Link>
                       </div>
-
-                      {/* Link to dedicated Chapter Road route */}
-                      <Link
-                        href={`/play/${chapter.id}`}
-                        className={`w-full py-3 rounded-2xl font-bold text-xs flex items-center justify-center gap-2 shadow-xs transition-all ${
-                          isCompleted
-                            ? "bg-emerald-50 text-emerald-800 border-2 border-emerald-300 hover:bg-emerald-100"
-                            : "bg-sky-600 hover:bg-sky-700 text-white border-b-4 border-sky-800 active:border-b-0 active:translate-y-1"
-                        }`}
-                      >
-                        <span>{isCompleted ? "Xem Lại Bản Đồ Đề Tài" : "Vào Luyện Tập Đề Tài Này"}</span>
-                        <ArrowRight className="w-4 h-4" />
-                      </Link>
                     </div>
                   </div>
                 );
@@ -340,32 +356,51 @@ export default function PlayPage() {
                 const progressItem = completedLevels[globalIndex];
                 const isPassed = progressItem?.passedSafely;
 
+                const scenarioChapter = PUZZLE_CHAPTERS.find((c) =>
+                  c.scenarioIds.includes(scenario.scenario_id)
+                );
+
                 return (
                   <div
                     key={scenario.scenario_id}
                     onClick={() => {
                       if (isUnlocked) handleSelectLevel(globalIndex);
                     }}
-                    className={`rounded-2xl p-5 border transition-all text-left flex flex-col justify-between space-y-3 ${
+                    className={`rounded-2xl p-4 border transition-all text-left flex flex-col justify-between space-y-3 ${
                       !isUnlocked
                         ? "bg-slate-100/70 border-slate-200 text-slate-400 cursor-not-allowed opacity-60"
                         : "bg-white border-slate-200 hover:border-sky-300 hover:shadow-md cursor-pointer group"
                     }`}
                   >
-                    <div className="space-y-2">
+                    <div className="space-y-2.5">
                       <div className="flex items-center justify-between">
-                        <span className="font-mono text-xs font-bold text-slate-700 px-2 py-0.5 rounded-md bg-slate-100">
-                          Ải {globalIndex + 1} • {scenario.scenario_id}
-                        </span>
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <div className="w-10 h-10 rounded-xl overflow-hidden shrink-0 bg-slate-900 border border-slate-200 shadow-xs">
+                            <img
+                              src={encodeURI(scenarioChapter?.imageUrl || "/images/cybersecurity.png")}
+                              alt={scenario.category_name_vi}
+                              className="w-full h-full object-cover"
+                              loading="lazy"
+                            />
+                          </div>
+                          <div className="min-w-0">
+                            <span className="font-mono text-[10px] font-bold text-sky-700 bg-sky-50 px-1.5 py-0.5 rounded border border-sky-200">
+                              Ải {globalIndex + 1} • {scenario.scenario_id}
+                            </span>
+                            <h4 className="text-xs font-bold text-slate-900 truncate mt-0.5">
+                              {scenario.category_name_vi}
+                            </h4>
+                          </div>
+                        </div>
 
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-1 shrink-0 ml-2">
                           {isPassed ? (
                             <span className="flex items-center gap-0.5 text-xs text-amber-500 font-bold">
                               <Star className="w-3.5 h-3.5 fill-amber-400" />
                               {progressItem.stars}★
                             </span>
                           ) : isUnlocked ? (
-                            <span className="text-[11px] font-bold text-sky-700 bg-sky-50 px-2 py-0.5 rounded-full">
+                            <span className="text-[10px] font-bold text-sky-700 bg-sky-50 px-2 py-0.5 rounded-full">
                               Sẵn sàng
                             </span>
                           ) : (
@@ -374,19 +409,15 @@ export default function PlayPage() {
                         </div>
                       </div>
 
-                      <h4 className="text-sm font-bold text-slate-900 leading-snug">
-                        {scenario.category_name_vi}
-                      </h4>
-
                       <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed">
                         {scenario.context}
                       </p>
                     </div>
 
                     <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
-                      <span>{scenario.skill}</span>
+                      <span className="text-[10px] font-medium text-slate-400">{scenario.skill}</span>
                       {isUnlocked && (
-                        <span className="text-sky-700 font-bold flex items-center gap-1">
+                        <span className="text-sky-700 font-bold text-[11px] flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
                           Chơi ➔
                         </span>
                       )}
