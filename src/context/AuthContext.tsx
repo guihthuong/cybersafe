@@ -12,12 +12,14 @@ export interface UserProfileData {
   total_score: number;
   streak_days: number;
   badges: any[];
+  role?: string;
 }
 
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   profile: UserProfileData | null;
+  isAdmin: boolean;
   isLoading: boolean;
   isAuthModalOpen: boolean;
   authModalTab: "signin" | "signup";
@@ -221,12 +223,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setProfile(null);
   };
 
+  // Kiểm tra quyền Admin dựa trên role trong profile, user metadata hoặc email
+  const isAdmin = Boolean(
+    profile?.role === "admin" ||
+    (user?.user_metadata as any)?.role === "admin" ||
+    (user?.app_metadata as any)?.role === "admin" ||
+    (user?.email && (
+      user.email.toLowerCase() === "admin@cybersafe.vn" ||
+      user.email.toLowerCase().startsWith("admin@") ||
+      user.email.toLowerCase().includes("admin")
+    )) ||
+    (profile?.display_name && profile.display_name.toLowerCase().includes("admin"))
+  );
+
   return (
     <AuthContext.Provider
       value={{
         user,
         session,
         profile,
+        isAdmin,
         isLoading,
         isAuthModalOpen,
         authModalTab,

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
+import { useAuth } from "@/context/AuthContext";
 import {
   BarChart3,
   Users,
@@ -14,8 +15,12 @@ import {
   Database,
   ShieldCheck,
   Search,
-  Calendar,
   MessageSquare,
+  Lock,
+  ShieldAlert,
+  LogIn,
+  LogOut,
+  UserCheck,
 } from "lucide-react";
 
 interface UserProgressRecord {
@@ -30,10 +35,22 @@ interface UserProgressRecord {
 
 interface ChatbotRecord {
   id?: string;
+  user_id?: string;
   input_text: string;
   risk_level: string;
   risk_score: number;
   analysis_summary: string;
+  created_at?: string;
+}
+
+interface UserProfileRecord {
+  id: string;
+  display_name: string;
+  avatar_id?: string;
+  target_group?: string;
+  total_score?: number;
+  streak_days?: number;
+  role?: string;
   created_at?: string;
 }
 
@@ -42,46 +59,64 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true);
   const [progressList, setProgressList] = useState<UserProgressRecord[]>([]);
   const [chatbotList, setChatbotList] = useState<ChatbotRecord[]>([]);
-  const [activeTab, setActiveTab] = useState<"progress" | "chatbot">("progress");
+  const [profilesList, setProfilesList] = useState<UserProfileRecord[]>([]);
+  const [activeTab, setActiveTab] = useState<"progress" | "chatbot" | "profiles">("progress");
   const [searchTerm, setSearchTerm] = useState("");
+
+  const { user, profile, isAdmin, isLoading: authLoading, openAuthModal, signOut } = useAuth();
 
   const loadData = async () => {
     setLoading(true);
     try {
       if (isSupabaseConfigured && supabase) {
-        // Fetch user progress
-        const { data: pData } = await supabase
+        // 1. Fetch user progress trực tiếp từ bảng user_progress
+        const { data: pData, error: pErr } = await supabase
           .from("user_progress")
           .select("*")
           .order("completed_at", { ascending: false })
-          .limit(100);
+          .limit(200);
 
-        if (pData && pData.length > 0) {
+        if (!pErr && pData) {
           setProgressList(pData);
         } else {
-          setProgressList(mockProgress);
+          setProgressList([]);
         }
 
-        // Fetch chatbot queries
-        const { data: cData } = await supabase
+        // 2. Fetch chatbot queries trực tiếp từ bảng chatbot_consultations
+        const { data: cData, error: cErr } = await supabase
           .from("chatbot_consultations")
           .select("*")
           .order("created_at", { ascending: false })
-          .limit(100);
+          .limit(200);
 
-        if (cData && cData.length > 0) {
+        if (!cErr && cData) {
           setChatbotList(cData);
         } else {
-          setChatbotList(mockChatbot);
+          setChatbotList([]);
+        }
+
+        // 3. Fetch hồ sơ học viên trực tiếp từ bảng user_profiles
+        const { data: uData, error: uErr } = await supabase
+          .from("user_profiles")
+          .select("*")
+          .order("created_at", { ascending: false })
+          .limit(200);
+
+        if (!uErr && uData) {
+          setProfilesList(uData);
+        } else {
+          setProfilesList([]);
         }
       } else {
-        setProgressList(mockProgress);
-        setChatbotList(mockChatbot);
+        setProgressList([]);
+        setChatbotList([]);
+        setProfilesList([]);
       }
     } catch (err) {
-      console.warn("Lỗi tải dữ liệu quản trị:", err);
-      setProgressList(mockProgress);
-      setChatbotList(mockChatbot);
+      console.warn("Lỗi tải dữ liệu quản trị từ Supabase:", err);
+      setProgressList([]);
+      setChatbotList([]);
+      setProfilesList([]);
     } finally {
       setLoading(false);
     }
@@ -101,7 +136,7 @@ export default function AdminPage() {
     }
   };
 
-  // Compute metrics
+  // Compute metrics từ database thật
   const totalSubmissions = progressList.length;
   const safeCount = progressList.filter((p) => p.passed_safely).length;
   const safeRate = totalSubmissions > 0 ? Math.round((safeCount / totalSubmissions) * 100) : 0;
@@ -112,7 +147,7 @@ export default function AdminPage() {
 
   // CSV export
   const exportProgressCSV = () => {
-    const headers = ["STT", "Thời gian", "Mã ải", "Điểm số", "Kết quả an toàn", "Số lần thử"];
+    const headers = ["STT", "Thời gian", "Mã ải", "Điểm số", "Kết quả an toàn", "Số lần thử", "User ID"];
     const rows = progressList.map((p, idx) => [
       idx + 1,
       formatDate(p.completed_at),
@@ -120,6 +155,7 @@ export default function AdminPage() {
       p.score || 0,
       p.passed_safely ? "Đạt an toàn" : "Rơi vào bẫy",
       p.attempts || 1,
+      p.user_id || "Ẩn danh",
     ]);
 
     const csvContent =
@@ -129,7 +165,7 @@ export default function AdminPage() {
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `Bao_cao_KHKT_Ket_qua_lam_bai_${Date.now()}.csv`);
+    link.setAttribute("download", `Bao_cao_KHKT_Ket_qua_thuc_nghiem_${Date.now()}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -144,17 +180,119 @@ export default function AdminPage() {
     (c.risk_level || "").toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  if (!mounted) {
+  const filteredProfiles = profilesList.filter((pr) =>
+    (pr.display_name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (pr.id || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (pr.target_group || "").toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  // 1. Loading State
+  if (!mounted || authLoading) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
-        <div className="flex items-center gap-3 text-slate-500 font-medium">
+        <div className="flex items-center gap-3 text-slate-600 font-medium bg-white px-6 py-4 rounded-2xl border border-slate-200 shadow-xs">
           <RefreshCw className="w-5 h-5 animate-spin text-sky-600" />
-          <span>Đang tải trung tâm nghiên cứu...</span>
+          <span>Đang kiểm tra quyền truy cập Quản Trị Viên...</span>
         </div>
       </div>
     );
   }
 
+  // 2. Chưa đăng nhập -> Yêu cầu đăng nhập Admin
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 sm:p-6">
+        <div className="max-w-md w-full bg-white rounded-3xl border border-slate-200 p-8 shadow-sm text-center space-y-6">
+          <div className="w-16 h-16 rounded-2xl bg-sky-50 text-sky-600 border border-sky-100 flex items-center justify-center mx-auto">
+            <Lock className="w-8 h-8" />
+          </div>
+
+          <div className="space-y-2">
+            <span className="font-mono text-xs font-bold text-sky-700 bg-sky-50 px-2.5 py-1 rounded-md border border-sky-200 uppercase">
+              Admin Gateway
+            </span>
+            <h1 className="text-2xl font-black text-slate-900 tracking-tight">
+              Khu Vực Quản Trị Viên
+            </h1>
+            <p className="text-xs sm:text-sm text-slate-500 font-medium leading-relaxed">
+              Trang này chứa dữ liệu thu thập thực nghiệm KHKT và quản trị cơ sở dữ liệu. Bạn cần đăng nhập bằng tài khoản Quản Trị Viên để tiếp tục.
+            </p>
+          </div>
+
+          <div className="space-y-3 pt-2">
+            <button
+              onClick={() => openAuthModal("signin")}
+              className="w-full py-3 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-sm flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs"
+            >
+              <LogIn className="w-4 h-4" />
+              <span>Đăng Nhập Tài Khoản Admin</span>
+            </button>
+
+            <Link
+              href="/"
+              className="w-full py-2.5 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs flex items-center justify-center gap-2 transition-colors inline-block"
+            >
+              <ArrowLeft className="w-3.5 h-3.5 inline mr-1" />
+              <span>Quay Lại Trang Chủ</span>
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 3. Đã đăng nhập nhưng không phải Admin -> Báo 403 Forbidden
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 sm:p-6">
+        <div className="max-w-md w-full bg-white rounded-3xl border border-rose-200 p-8 shadow-sm text-center space-y-6">
+          <div className="w-16 h-16 rounded-2xl bg-rose-50 text-rose-600 border border-rose-200 flex items-center justify-center mx-auto">
+            <ShieldAlert className="w-8 h-8" />
+          </div>
+
+          <div className="space-y-2">
+            <span className="font-mono text-xs font-bold text-rose-700 bg-rose-50 px-2.5 py-1 rounded-md border border-rose-200 uppercase">
+              403 • Truy Cập Bị Từ Chối
+            </span>
+            <h1 className="text-2xl font-black text-slate-900 tracking-tight">
+              Không Có Quyền Quản Trị
+            </h1>
+            <p className="text-xs sm:text-sm text-slate-500 font-medium leading-relaxed">
+              Tài khoản hiện tại <strong className="text-slate-900">({user.email})</strong> là tài khoản Học Viên / Người Dùng thông thường, không có đặc quyền Quản Trị Viên (Admin).
+            </p>
+          </div>
+
+          <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-left text-xs space-y-1 text-slate-600">
+            <div className="font-semibold text-slate-800">Hướng dẫn cấp quyền Admin:</div>
+            <div>• Đăng nhập bằng tài khoản có email chứa tiền tố <code className="text-sky-600 font-bold">admin@...</code> hoặc</div>
+            <div>• Trong Supabase SQL: <code className="text-slate-800 bg-slate-200 px-1 rounded">UPDATE user_profiles SET role = &apos;admin&apos; WHERE id = &apos;{user.id.slice(0, 8)}...&apos;;</code></div>
+          </div>
+
+          <div className="space-y-3 pt-2">
+            <button
+              onClick={() => {
+                signOut().then(() => openAuthModal("signin"));
+              }}
+              className="w-full py-3 px-4 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-sm flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs"
+            >
+              <LogOut className="w-4 h-4" />
+              <span>Đăng Xuất & Đổi Tài Khoản Admin</span>
+            </button>
+
+            <Link
+              href="/"
+              className="w-full py-2.5 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs flex items-center justify-center gap-2 transition-colors inline-block"
+            >
+              <ArrowLeft className="w-3.5 h-3.5 inline mr-1" />
+              <span>Quay Lại Trang Chủ</span>
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 4. Đã xác thực quyền Admin -> Render Full Admin Dashboard
   return (
     <div className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto space-y-8">
@@ -169,15 +307,19 @@ export default function AdminPage() {
               >
                 <ArrowLeft className="w-4 h-4" />
               </Link>
-              <span className="font-mono text-xs font-bold text-sky-700 bg-sky-50 px-2.5 py-0.5 rounded-md border border-sky-200">
+              <span className="font-mono text-xs font-bold text-indigo-700 bg-indigo-50 px-2.5 py-0.5 rounded-md border border-indigo-200">
                 ADMIN • RESEARCH HUB
+              </span>
+              <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-md border border-emerald-200 flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                Supabase Live
               </span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
               Trung Tâm Quản Trị & Thu Thập Dữ Liệu Nghiên Cứu KHKT
             </h1>
             <p className="text-xs sm:text-sm text-slate-500 font-medium">
-              Theo dõi kết quả thực nghiệm, phản xạ của người dùng trước 39 tình huống và dữ liệu phục vụ báo cáo khoa học.
+              Dữ liệu thời gian thực được đồng bộ trực tiếp từ Supabase Database cho đề tài nghiên cứu giáo dục an toàn số.
             </p>
           </div>
 
@@ -188,12 +330,12 @@ export default function AdminPage() {
               className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs flex items-center gap-2 transition-colors cursor-pointer"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
-              <span>Làm mới</span>
+              <span>Làm mới DB</span>
             </button>
 
             <button
               onClick={exportProgressCSV}
-              className="px-4 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs flex items-center gap-2 shadow-xs cursor-pointer transition-all"
+              className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs flex items-center gap-2 shadow-xs cursor-pointer transition-all"
             >
               <Download className="w-3.5 h-3.5" />
               <span>Xuất Báo Cáo CSV</span>
@@ -201,15 +343,15 @@ export default function AdminPage() {
           </div>
         </div>
 
-        {/* 4 Metric Cards */}
+        {/* 4 Metric Cards từ Database Thật */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-1">
             <div className="flex items-center justify-between text-xs font-bold text-slate-500">
-              <span>Tổng Lượt Làm Bài</span>
+              <span>Lượt Làm Bài Thực Nghiệm</span>
               <Users className="w-4 h-4 text-sky-600" />
             </div>
             <div className="text-2xl sm:text-3xl font-black text-slate-900">{totalSubmissions}</div>
-            <p className="text-[11px] text-slate-400">Ghi nhận từ bài thực nghiệm</p>
+            <p className="text-[11px] text-slate-400">Bảng user_progress Supabase</p>
           </div>
 
           <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-1">
@@ -218,7 +360,7 @@ export default function AdminPage() {
               <CheckCircle2 className="w-4 h-4 text-emerald-600" />
             </div>
             <div className="text-2xl sm:text-3xl font-black text-emerald-600">{safeRate}%</div>
-            <p className="text-[11px] text-slate-400">{safeCount} lượt xử lý đúng chuẩn</p>
+            <p className="text-[11px] text-slate-400">{safeCount} lượt xử lý an toàn</p>
           </div>
 
           <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-1">
@@ -232,11 +374,11 @@ export default function AdminPage() {
 
           <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-1">
             <div className="flex items-center justify-between text-xs font-bold text-slate-500">
-              <span>Lượt Tra Cứu Tin Nhắn</span>
+              <span>Tin Nhắn Đã Tra Cứu</span>
               <MessageSquare className="w-4 h-4 text-amber-600" />
             </div>
             <div className="text-2xl sm:text-3xl font-black text-amber-600">{chatbotList.length}</div>
-            <p className="text-[11px] text-slate-400">Mẫu tin nghi vấn đã phân tích</p>
+            <p className="text-[11px] text-slate-400">Bảng chatbot_consultations</p>
           </div>
         </div>
 
@@ -244,26 +386,36 @@ export default function AdminPage() {
         <div className="p-6 rounded-3xl bg-white border border-slate-200 shadow-xs space-y-6">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
             {/* Tab switch */}
-            <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl text-xs font-bold">
+            <div className="flex flex-wrap items-center gap-1.5 bg-slate-100 p-1 rounded-xl text-xs font-bold">
               <button
                 onClick={() => setActiveTab("progress")}
                 className={`px-4 py-2 rounded-lg transition-all cursor-pointer ${
                   activeTab === "progress"
-                    ? "bg-white text-sky-700 shadow-xs"
+                    ? "bg-white text-indigo-700 shadow-xs font-bold"
                     : "text-slate-600 hover:text-slate-900"
                 }`}
               >
-                Kết Quả Làm Bài ({progressList.length})
+                Tiến Trình 39 Ải ({progressList.length})
               </button>
               <button
                 onClick={() => setActiveTab("chatbot")}
                 className={`px-4 py-2 rounded-lg transition-all cursor-pointer ${
                   activeTab === "chatbot"
-                    ? "bg-white text-sky-700 shadow-xs"
+                    ? "bg-white text-indigo-700 shadow-xs font-bold"
                     : "text-slate-600 hover:text-slate-900"
                 }`}
               >
-                Lịch Sử Kiểm Tra Tin Nhắn ({chatbotList.length})
+                Tin Nhắn Nghi Vấn ({chatbotList.length})
+              </button>
+              <button
+                onClick={() => setActiveTab("profiles")}
+                className={`px-4 py-2 rounded-lg transition-all cursor-pointer ${
+                  activeTab === "profiles"
+                    ? "bg-white text-indigo-700 shadow-xs font-bold"
+                    : "text-slate-600 hover:text-slate-900"
+                }`}
+              >
+                Học Viên Đã Đăng Ký ({profilesList.length})
               </button>
             </div>
 
@@ -274,13 +426,13 @@ export default function AdminPage() {
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Tìm theo mã ải hoặc từ khóa..."
-                className="w-full pl-9 pr-3 py-1.5 rounded-xl border border-slate-200 text-xs font-medium outline-none focus:border-sky-500"
+                placeholder="Tìm kiếm dữ liệu..."
+                className="w-full pl-9 pr-3 py-1.5 rounded-xl border border-slate-200 text-xs font-medium outline-none focus:border-indigo-500"
               />
             </div>
           </div>
 
-          {/* Table 1: User Progress */}
+          {/* Table 1: User Progress (Database thật) */}
           {activeTab === "progress" && (
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
@@ -291,14 +443,20 @@ export default function AdminPage() {
                     <th className="py-3 px-3">Kết quả</th>
                     <th className="py-3 px-3">Điểm</th>
                     <th className="py-3 px-3">Số lần thử</th>
-                    <th className="py-3 px-3">Mã người học</th>
+                    <th className="py-3 px-3">Mã học viên (UUID)</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 font-medium">
                   {filteredProgress.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="py-8 text-center text-slate-400">
-                        Chưa có dữ liệu nào khớp với tìm kiếm.
+                      <td colSpan={6} className="py-12 text-center text-slate-400 space-y-2">
+                        <Database className="w-8 h-8 mx-auto text-slate-300" />
+                        <div className="text-sm font-semibold text-slate-600">
+                          Chưa có lượt làm bài nào trong bảng user_progress
+                        </div>
+                        <p className="text-xs text-slate-400 max-w-md mx-auto">
+                          Khi học viên đăng nhập tài khoản và hoàn thành các ải thử thách, kết quả sẽ tự động được ghi nhận và hiển thị ngay tại đây.
+                        </p>
                       </td>
                     </tr>
                   ) : (
@@ -336,28 +494,35 @@ export default function AdminPage() {
             </div>
           )}
 
-          {/* Table 2: Chatbot Queries */}
+          {/* Table 2: Chatbot Queries (Database thật) */}
           {activeTab === "chatbot" && (
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
                 <thead>
                   <tr className="border-b border-slate-200 text-slate-400 font-mono uppercase tracking-wider">
+                    <th className="py-3 px-3">Thời gian</th>
                     <th className="py-3 px-3">Nội dung tin nhắn người dùng nhập</th>
                     <th className="py-3 px-3">Mức độ rủi ro</th>
-                    <th className="py-3 px-3">Điểm rủi ro</th>
+                    <th className="py-3 px-3">Điểm</th>
                     <th className="py-3 px-3">Tóm tắt phân tích</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 font-medium">
                   {filteredChatbot.length === 0 ? (
                     <tr>
-                      <td colSpan={4} className="py-8 text-center text-slate-400">
-                        Chưa có dữ liệu nào khớp với tìm kiếm.
+                      <td colSpan={5} className="py-12 text-center text-slate-400 space-y-2">
+                        <MessageSquare className="w-8 h-8 mx-auto text-slate-300" />
+                        <div className="text-sm font-semibold text-slate-600">
+                          Chưa có tin nhắn nào trong bảng chatbot_consultations
+                        </div>
                       </td>
                     </tr>
                   ) : (
                     filteredChatbot.map((row, idx) => (
                       <tr key={idx} className="hover:bg-slate-50/80 transition-colors">
+                        <td className="py-3 px-3 text-slate-500 whitespace-nowrap">
+                          {formatDate(row.created_at)}
+                        </td>
                         <td className="py-3 px-3 text-slate-900 font-medium max-w-sm truncate">
                           &ldquo;{row.input_text}&rdquo;
                         </td>
@@ -375,8 +540,79 @@ export default function AdminPage() {
                           </span>
                         </td>
                         <td className="py-3 px-3 font-bold text-slate-900">{row.risk_score || 0}/100</td>
-                        <td className="py-3 px-3 text-slate-600 max-w-md line-clamp-1">
+                        <td className="py-3 px-3 text-slate-600 max-w-md line-clamp-2">
                           {row.analysis_summary}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* Table 3: User Profiles (Database thật) */}
+          {activeTab === "profiles" && (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="border-b border-slate-200 text-slate-400 font-mono uppercase tracking-wider">
+                    <th className="py-3 px-3">Mã User</th>
+                    <th className="py-3 px-3">Tên hiển thị</th>
+                    <th className="py-3 px-3">Nhóm đối tượng</th>
+                    <th className="py-3 px-3">Điểm tích lũy XP</th>
+                    <th className="py-3 px-3">Chuỗi ngày</th>
+                    <th className="py-3 px-3">Vai trò</th>
+                    <th className="py-3 px-3">Ngày đăng ký</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 font-medium">
+                  {filteredProfiles.length === 0 ? (
+                    <tr>
+                      <td colSpan={7} className="py-12 text-center text-slate-400 space-y-2">
+                        <UserCheck className="w-8 h-8 mx-auto text-slate-300" />
+                        <div className="text-sm font-semibold text-slate-600">
+                          Chưa có tài khoản nào trong bảng user_profiles
+                        </div>
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredProfiles.map((row, idx) => (
+                      <tr key={idx} className="hover:bg-slate-50/80 transition-colors">
+                        <td className="py-3 px-3 font-mono text-slate-400">
+                          {row.id ? `${row.id.slice(0, 8)}...` : "N/A"}
+                        </td>
+                        <td className="py-3 px-3 font-bold text-slate-900">
+                          {row.display_name}
+                        </td>
+                        <td className="py-3 px-3">
+                          <span className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 text-[11px] font-semibold">
+                            {row.target_group === "student"
+                              ? "Học sinh"
+                              : row.target_group === "elder"
+                              ? "Người cao tuổi"
+                              : "Phổ thông"}
+                          </span>
+                        </td>
+                        <td className="py-3 px-3 font-bold text-sky-600">
+                          {row.total_score || 0} XP
+                        </td>
+                        <td className="py-3 px-3 text-slate-600">
+                          {row.streak_days || 1} ngày
+                        </td>
+                        <td className="py-3 px-3">
+                          {row.role === "admin" ? (
+                            <span className="px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200 font-bold text-[10px]">
+                              ADMIN
+                            </span>
+                          ) : (
+                            <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[10px]">
+                              Học Viên
+                            </span>
+                          )}
+                        </td>
+                        <td className="py-3 px-3 text-slate-500 whitespace-nowrap">
+                          {formatDate(row.created_at)}
                         </td>
                       </tr>
                     ))
@@ -390,68 +626,3 @@ export default function AdminPage() {
     </div>
   );
 }
-
-// Sample fallback records for research demonstration if Supabase has zero rows yet
-const mockProgress: UserProgressRecord[] = [
-  {
-    scenario_id: "Q1.1",
-    score: 100,
-    passed_safely: true,
-    attempts: 1,
-    completed_at: new Date(Date.now() - 1000 * 60 * 15).toISOString(),
-    user_id: "usr_student_01",
-  },
-  {
-    scenario_id: "Q1.2",
-    score: 90,
-    passed_safely: true,
-    attempts: 2,
-    completed_at: new Date(Date.now() - 1000 * 60 * 45).toISOString(),
-    user_id: "usr_student_01",
-  },
-  {
-    scenario_id: "Q1.3",
-    score: 20,
-    passed_safely: false,
-    attempts: 1,
-    completed_at: new Date(Date.now() - 1000 * 60 * 120).toISOString(),
-    user_id: "usr_elderly_04",
-  },
-  {
-    scenario_id: "Q2.1",
-    score: 100,
-    passed_safely: true,
-    attempts: 1,
-    completed_at: new Date(Date.now() - 1000 * 60 * 180).toISOString(),
-    user_id: "usr_elderly_04",
-  },
-  {
-    scenario_id: "Q2.2",
-    score: 100,
-    passed_safely: true,
-    attempts: 1,
-    completed_at: new Date(Date.now() - 1000 * 60 * 240).toISOString(),
-    user_id: "usr_general_12",
-  },
-];
-
-const mockChatbot: ChatbotRecord[] = [
-  {
-    input_text: "Con đang cấp cứu ở bệnh viện Chợ Rẫy chuyển gấp 50 triệu mổ",
-    risk_level: "emergency",
-    risk_score: 95,
-    analysis_summary: "Mạo danh con cái bị tai nạn cấp cứu để đánh vào tâm lý hoảng loạn của phụ huynh.",
-  },
-  {
-    input_text: "VNeID mức 2 bị lỗi cư trú tải vneid-capnhat.top/app.apk",
-    risk_level: "emergency",
-    risk_score: 98,
-    analysis_summary: "Dụ cài đặt tệp .apk chứa mã độc giám sát màn hình và đánh cắp OTP ngân hàng.",
-  },
-  {
-    input_text: "Tài khoản trúng thưởng xe máy Honda SH chuyển 2tr5 phí giao",
-    risk_level: "high",
-    risk_score: 85,
-    analysis_summary: "Lừa đảo trúng thưởng bắt nộp thuế nhận giải trước.",
-  },
-];

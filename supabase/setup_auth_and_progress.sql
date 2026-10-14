@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS public.user_profiles (
   updated_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- Nếu bảng đã tồn tại từ trước, bổ sung các cột avatar_id và streak_days nếu chưa có
+-- Nếu bảng đã tồn tại từ trước, bổ sung các cột avatar_id, streak_days và role nếu chưa có
 DO $$
 BEGIN
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'user_profiles' AND column_name = 'avatar_id') THEN
@@ -25,6 +25,9 @@ BEGIN
   END IF;
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'user_profiles' AND column_name = 'streak_days') THEN
     ALTER TABLE public.user_profiles ADD COLUMN streak_days INTEGER DEFAULT 1;
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'user_profiles' AND column_name = 'role') THEN
+    ALTER TABLE public.user_profiles ADD COLUMN role TEXT NOT NULL DEFAULT 'user';
   END IF;
 END $$;
 
@@ -113,10 +116,21 @@ DROP POLICY IF EXISTS "Users can insert own profile" ON public.user_profiles;
 CREATE POLICY "Users can insert own profile" ON public.user_profiles
   FOR INSERT TO authenticated WITH CHECK (auth.uid() = id);
 
--- User Progress: Mỗi tài khoản chỉ xem và ghi tiến trình của chính mình
+-- User Progress: Mỗi tài khoản chỉ xem và ghi tiến trình của chính mình; Admin xem được toàn bộ
 DROP POLICY IF EXISTS "Users can view own progress" ON public.user_progress;
 CREATE POLICY "Users can view own progress" ON public.user_progress
   FOR SELECT TO authenticated USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Admins can view all progress" ON public.user_progress;
+CREATE POLICY "Admins can view all progress" ON public.user_progress
+  FOR SELECT TO authenticated
+  USING (
+    EXISTS (
+      SELECT 1 FROM public.user_profiles
+      WHERE id = auth.uid() AND role = 'admin'
+    )
+    OR (auth.jwt()->>'email' ILIKE '%admin%')
+  );
 
 DROP POLICY IF EXISTS "Users can insert own progress" ON public.user_progress;
 CREATE POLICY "Users can insert own progress" ON public.user_progress
