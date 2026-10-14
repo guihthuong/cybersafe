@@ -33,10 +33,12 @@ export function AuthModal() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [targetGroup, setTargetGroup] = useState<"student" | "elder" | "general">("student");
   const [selectedAvatarId, setSelectedAvatarId] = useState("guardian");
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -63,6 +65,11 @@ export function AuthModal() {
         }
         if (password.length < 6) {
           setErrorMessage("Mật khẩu phải có ít nhất 6 ký tự để đảm bảo an toàn.");
+          setIsSubmitting(false);
+          return;
+        }
+        if (password !== confirmPassword) {
+          setErrorMessage("Mật khẩu xác nhận không khớp. Vui lòng kiểm tra lại.");
           setIsSubmitting(false);
           return;
         }
@@ -119,6 +126,8 @@ export function AuthModal() {
             onClick={() => {
               setErrorMessage(null);
               setSuccessMessage(null);
+              setPassword("");
+              setConfirmPassword("");
               openAuthModal("signin");
             }}
             className={`py-2 rounded-xl flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
@@ -135,6 +144,8 @@ export function AuthModal() {
             onClick={() => {
               setErrorMessage(null);
               setSuccessMessage(null);
+              setPassword("");
+              setConfirmPassword("");
               openAuthModal("signup");
             }}
             className={`py-2 rounded-xl flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
@@ -221,6 +232,31 @@ export function AuthModal() {
               </button>
             </div>
           </div>
+
+          {/* Confirm Password (Only for Sign Up) */}
+          {authModalTab === "signup" && (
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-700">Xác Nhận Mật Khẩu</label>
+              <div className="relative">
+                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <input
+                  type={showConfirmPassword ? "text" : "password"}
+                  required
+                  placeholder="Nhập lại mật khẩu vừa đặt"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="w-full pl-10 pr-10 py-2.5 rounded-2xl border-2 border-slate-200 focus:border-sky-500 focus:ring-2 focus:ring-sky-200 outline-none text-sm font-semibold transition-all"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                >
+                  {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Target Group & Avatar Selection (Only for Sign Up) */}
           {authModalTab === "signup" && (
