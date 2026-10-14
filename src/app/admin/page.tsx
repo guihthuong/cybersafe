@@ -38,6 +38,7 @@ interface ChatbotRecord {
 }
 
 export default function AdminPage() {
+  const [mounted, setMounted] = useState(false);
   const [loading, setLoading] = useState(true);
   const [progressList, setProgressList] = useState<UserProgressRecord[]>([]);
   const [chatbotList, setChatbotList] = useState<ChatbotRecord[]>([]);
@@ -87,8 +88,18 @@ export default function AdminPage() {
   };
 
   useEffect(() => {
+    setMounted(true);
     loadData();
   }, []);
+
+  const formatDate = (dateStr?: string) => {
+    if (!dateStr) return "N/A";
+    try {
+      return new Date(dateStr).toLocaleString("vi-VN");
+    } catch {
+      return dateStr;
+    }
+  };
 
   // Compute metrics
   const totalSubmissions = progressList.length;
@@ -104,11 +115,11 @@ export default function AdminPage() {
     const headers = ["STT", "Thời gian", "Mã ải", "Điểm số", "Kết quả an toàn", "Số lần thử"];
     const rows = progressList.map((p, idx) => [
       idx + 1,
-      new Date(p.completed_at).toLocaleString("vi-VN"),
-      p.scenario_id,
-      p.score,
+      formatDate(p.completed_at),
+      p.scenario_id || "N/A",
+      p.score || 0,
       p.passed_safely ? "Đạt an toàn" : "Rơi vào bẫy",
-      p.attempts,
+      p.attempts || 1,
     ]);
 
     const csvContent =
@@ -125,13 +136,24 @@ export default function AdminPage() {
   };
 
   const filteredProgress = progressList.filter((p) =>
-    p.scenario_id.toLowerCase().includes(searchTerm.toLowerCase())
+    (p.scenario_id || "").toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const filteredChatbot = chatbotList.filter((c) =>
-    c.input_text.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    c.risk_level.toLowerCase().includes(searchTerm.toLowerCase())
+    (c.input_text || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (c.risk_level || "").toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  if (!mounted) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
+        <div className="flex items-center gap-3 text-slate-500 font-medium">
+          <RefreshCw className="w-5 h-5 animate-spin text-sky-600" />
+          <span>Đang tải trung tâm nghiên cứu...</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8">
@@ -283,10 +305,10 @@ export default function AdminPage() {
                     filteredProgress.map((row, idx) => (
                       <tr key={idx} className="hover:bg-slate-50/80 transition-colors">
                         <td className="py-3 px-3 text-slate-500 whitespace-nowrap">
-                          {new Date(row.completed_at).toLocaleString("vi-VN")}
+                          {formatDate(row.completed_at)}
                         </td>
                         <td className="py-3 px-3 font-mono font-bold text-slate-900">
-                          {row.scenario_id}
+                          {row.scenario_id || "N/A"}
                         </td>
                         <td className="py-3 px-3">
                           {row.passed_safely ? (
@@ -301,10 +323,10 @@ export default function AdminPage() {
                             </span>
                           )}
                         </td>
-                        <td className="py-3 px-3 font-bold text-slate-900">{row.score}</td>
+                        <td className="py-3 px-3 font-bold text-slate-900">{row.score ?? 0}</td>
                         <td className="py-3 px-3 text-slate-600">{row.attempts || 1}</td>
                         <td className="py-3 px-3 font-mono text-slate-400">
-                          {row.user_id ? `${row.user_id.slice(0, 8)}...` : "Khách ẩn danh"}
+                          {row.user_id ? `${String(row.user_id).slice(0, 8)}...` : "Khách ẩn danh"}
                         </td>
                       </tr>
                     ))
@@ -349,10 +371,10 @@ export default function AdminPage() {
                                 : "bg-emerald-50 text-emerald-800 border border-emerald-200"
                             }`}
                           >
-                            {row.risk_level.toUpperCase()}
+                            {(row.risk_level || "low").toUpperCase()}
                           </span>
                         </td>
-                        <td className="py-3 px-3 font-bold text-slate-900">{row.risk_score}/100</td>
+                        <td className="py-3 px-3 font-bold text-slate-900">{row.risk_score || 0}/100</td>
                         <td className="py-3 px-3 text-slate-600 max-w-md line-clamp-1">
                           {row.analysis_summary}
                         </td>
