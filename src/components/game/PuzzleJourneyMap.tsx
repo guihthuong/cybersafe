@@ -2,16 +2,70 @@
 
 import { useMemo } from "react";
 import { Scenario } from "@/types/scenario";
-import { Lock, Check, Star, Play, Shield } from "lucide-react";
+import { Lock, Check, Star, Play } from "lucide-react";
 
 interface PuzzleJourneyMapProps {
   scenarios: Scenario[];
   unlockedLevelIndex: number;
   completedLevels: Record<number, { score: number; stars: number; passedSafely: boolean }>;
   isJuryUnlockedAll: boolean;
-  avatarId: string;
+  avatarId?: string;
   onSelectLevel: (levelIndex: number) => void;
   globalStartIndex?: number; // 0-indexed offset if rendering a sub-chapter
+}
+
+function getScenarioScamArt(scenario: Scenario, relIdx: number): { image: string; label: string } {
+  // If stimulus has explicit image_url
+  if (scenario.stimulus?.image_url) {
+    return {
+      image: scenario.stimulus.image_url,
+      label: scenario.category_name_vi.split("(")[0].trim(),
+    };
+  }
+
+  const sid = scenario.scenario_id;
+  const cat = scenario.category;
+
+  if (cat === "fake_police_authority") {
+    if (sid === "Q1.3") return { image: "/images/stealing OTP.png", label: "Mã độc VNeID giả" };
+    if (sid === "Q1.2") return { image: "/images/hacker.png", label: "Dọa bắt giam qua mạng" };
+    return { image: "/images/fake police.png", label: "Mạo danh Công an điều tra" };
+  }
+  if (cat === "bank_otp_fraud") {
+    if (sid === "Q2.3") return { image: "/images/stealing OTP.png", label: "Chiếm đoạt Smart OTP" };
+    if (sid === "Q2.2") return { image: "/images/fake mobile banking.png", label: "Sinh trắc học giả mạo" };
+    return { image: "/images/fake mobile banking.png", label: "SMS mạo danh ngân hàng" };
+  }
+  if (cat === "easy_job_high_pay") {
+    return { image: "/images/fake job scam trap.png", label: "Bẫy việc nhẹ lương cao" };
+  }
+  if (cat === "deepfake_video_call") {
+    return { image: "/images/imposter wearing face mask phone call.png", label: "Deepfake gọi video" };
+  }
+  if (cat === "romance_investment_pig") {
+    if (relIdx % 2 === 0) return { image: "/images/romance scam.png", label: "Bẫy tình cảm hẹn hò" };
+    return { image: "/images/falling stock chart scam.png", label: "Sàn đầu tư tài chính ảo" };
+  }
+  if (cat === "malicious_app_link") {
+    return { image: "/images/stealing OTP.png", label: "Cài tệp .APK lạ" };
+  }
+  if (cat === "lottery_reward_trap") {
+    return { image: "/images/fake lottery prize trap.png", label: "Bẫy trúng xe SH 0 đồng" };
+  }
+  if (cat === "ecommerce_fake_shipper") {
+    return { image: "/images/qr scam.png", label: "Bẫy mã QR độc hại" };
+  }
+  if (cat === "social_account_takeover") {
+    return { image: "/images/hacker stealing social media profile.png", label: "Hack Facebook mượn tiền" };
+  }
+  if (cat === "travel_ticket_scam") {
+    return { image: "/images/falling stock chart scam.png", label: "Vé máy bay giá rẻ ảo" };
+  }
+  if (cat === "fake_scholarship_course") {
+    return { image: "/images/false rumor fake news.png", label: "Khóa học hè quốc tế giả" };
+  }
+
+  return { image: "/images/cybersecurity.png", label: "Phòng vệ số" };
 }
 
 export function PuzzleJourneyMap({
@@ -22,18 +76,16 @@ export function PuzzleJourneyMap({
   onSelectLevel,
   globalStartIndex = 0,
 }: PuzzleJourneyMapProps) {
-  const ROW_HEIGHT = 175;
-  const totalHeight = Math.max(540, scenarios.length * ROW_HEIGHT + 140);
+  const ROW_HEIGHT = 185;
+  const totalHeight = Math.max(560, scenarios.length * ROW_HEIGHT + 140);
 
-  // Compute (x, y) coordinates for each node
-  // Oscillate between 26% and 74%
+  // Compute coordinates for each node
   const nodes = useMemo(() => {
     return scenarios.map((scenario, relIdx) => {
       const globalIdx = globalStartIndex + relIdx;
-      const xPercent = relIdx % 2 === 0 ? 26 : 74;
+      const xPercent = relIdx % 2 === 0 ? 25 : 75;
       const yPixels = relIdx * ROW_HEIGHT + 130;
 
-      // Ải đầu tiên của đề tài luôn mở
       const isFirstInTopic = relIdx === 0;
       const prevNodeCompleted =
         relIdx > 0 &&
@@ -52,6 +104,7 @@ export function PuzzleJourneyMap({
         (isFirstInTopic || prevNodeCompleted);
 
       const earnedStars = completedLevels[globalIdx]?.stars || 0;
+      const scamArt = getScenarioScamArt(scenario, relIdx);
 
       return {
         relIdx,
@@ -65,6 +118,7 @@ export function PuzzleJourneyMap({
         isCompleted,
         isCurrent,
         earnedStars,
+        scamArt,
       };
     });
   }, [scenarios, globalStartIndex, unlockedLevelIndex, completedLevels, isJuryUnlockedAll]);
@@ -76,17 +130,16 @@ export function PuzzleJourneyMap({
         className="relative w-full rounded-3xl bg-slate-50/80 border border-slate-200/90 shadow-xs overflow-hidden"
         style={{ minHeight: `${totalHeight}px` }}
       >
-        {/* Subtle Background Pattern (Clean grid dots) */}
+        {/* Subtle Background Dot Grid */}
         <div
           className="absolute inset-0 pointer-events-none opacity-40"
           style={{
-            backgroundImage:
-              "radial-gradient(#94a3b8 1px, transparent 1px)",
+            backgroundImage: "radial-gradient(#94a3b8 1px, transparent 1px)",
             backgroundSize: "24px 24px",
           }}
         />
 
-        {/* SVG ROAD TRAIL */}
+        {/* SVG Road Trail */}
         <svg
           className="absolute inset-0 w-full h-full pointer-events-none z-0"
           xmlns="http://www.w3.org/2000/svg"
@@ -95,7 +148,6 @@ export function PuzzleJourneyMap({
             if (i >= nodes.length - 1) return null;
             const nextNode = nodes[i + 1];
 
-            // SVG cubic bezier path
             const startX = `${node.xPercent}%`;
             const startY = node.yPixels;
             const endX = `${nextNode.xPercent}%`;
@@ -139,10 +191,10 @@ export function PuzzleJourneyMap({
           })}
         </svg>
 
-        {/* INTERACTIVE LEVEL NODES & CORRESPONDING PREVIEW CARDS */}
+        {/* INTERACTIVE LEVEL NODES & SCENARIO CARDS WITH MILESTONE SCAM ART */}
         {nodes.map((node) => {
           const isLeft = node.xPercent < 50;
-          const oppositeX = isLeft ? 74 : 26;
+          const oppositeX = isLeft ? 75 : 25;
 
           return (
             <div key={node.scenario.scenario_id}>
@@ -234,15 +286,22 @@ export function PuzzleJourneyMap({
                   )}
                 </button>
 
-                {/* Mobile Info Pill under node */}
-                <div className="mt-2 max-w-[120px] text-center sm:hidden">
-                  <span className="text-[10px] font-bold text-slate-700 bg-white/95 px-2 py-0.5 rounded-md border border-slate-200 shadow-xs block truncate">
-                    Ải {node.relLevelNum} • {node.scenario.scenario_id}
+                {/* Mobile Milestone Illustration & Label below node */}
+                <div className="mt-2 flex flex-col items-center gap-1 max-w-[120px] text-center sm:hidden">
+                  <div className="w-12 h-12 rounded-xl bg-white border border-slate-200 p-1 flex items-center justify-center shadow-xs">
+                    <img
+                      src={node.scamArt.image}
+                      alt={node.scamArt.label}
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+                  <span className="text-[10px] font-bold text-slate-800 bg-white/95 px-2 py-0.5 rounded-md border border-slate-200 shadow-xs block truncate w-full">
+                    {node.scamArt.label}
                   </span>
                 </div>
               </div>
 
-              {/* 2. Desktop Human-crafted Scenario Overview Card on Opposite Side */}
+              {/* 2. Desktop Scenario Card WITH THE SCAM MILESTONE IMAGE */}
               <div
                 className="hidden sm:flex absolute z-15 -translate-x-1/2 -translate-y-1/2 flex-col cursor-pointer transition-all hover-lift"
                 style={{
@@ -254,9 +313,9 @@ export function PuzzleJourneyMap({
                 }}
               >
                 <div
-                  className={`p-4 rounded-2xl border text-left w-64 shadow-xs transition-all ${
+                  className={`p-3.5 rounded-2xl border text-left w-72 sm:w-80 shadow-xs transition-all flex items-center gap-3.5 ${
                     node.isCurrent
-                      ? "bg-white border-sky-300 ring-2 ring-sky-100/80 shadow-md"
+                      ? "bg-white border-sky-400 ring-2 ring-sky-100/90 shadow-md"
                       : node.isCompleted
                       ? "bg-white/95 border-emerald-200 hover:border-emerald-300"
                       : node.isUnlocked
@@ -264,56 +323,72 @@ export function PuzzleJourneyMap({
                       : "bg-slate-50/70 border-slate-200 opacity-60 pointer-events-none"
                   }`}
                 >
-                  <div className="flex items-center justify-between gap-1 mb-1.5">
-                    <span className="text-[11px] font-mono font-bold text-slate-500">
-                      Ải {node.relLevelNum} • {node.scenario.scenario_id}
-                    </span>
-                    <span
-                      className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                        node.scenario.difficulty === "beginner"
-                          ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                  {/* The Milestone Scam Image Thumbnail */}
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center p-2 shrink-0 group-hover:scale-105 transition-transform">
+                    <img
+                      src={node.scamArt.image}
+                      alt={node.scamArt.label}
+                      className="w-full h-full object-contain drop-shadow-sm select-none"
+                    />
+                  </div>
+
+                  {/* Text Details */}
+                  <div className="flex-1 min-w-0 space-y-1">
+                    <div className="flex items-center justify-between gap-1">
+                      <span className="text-[11px] font-mono font-bold text-slate-500">
+                        Ải {node.relLevelNum} • {node.scenario.scenario_id}
+                      </span>
+                      <span
+                        className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                          node.scenario.difficulty === "beginner"
+                            ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                            : node.scenario.difficulty === "intermediate"
+                            ? "bg-amber-50 text-amber-700 border border-amber-200"
+                            : "bg-rose-50 text-rose-700 border border-rose-200"
+                        }`}
+                      >
+                        {node.scenario.difficulty === "beginner"
+                          ? "Cơ bản"
                           : node.scenario.difficulty === "intermediate"
-                          ? "bg-amber-50 text-amber-700 border border-amber-200"
-                          : "bg-rose-50 text-rose-700 border border-rose-200"
-                      }`}
-                    >
-                      {node.scenario.difficulty === "beginner"
-                        ? "Cơ bản"
-                        : node.scenario.difficulty === "intermediate"
-                        ? "Thực tế"
-                        : "Chuyên sâu"}
-                    </span>
-                  </div>
+                          ? "Thực tế"
+                          : "Chuyên sâu"}
+                      </span>
+                    </div>
 
-                  <div className="text-xs font-bold text-slate-900 line-clamp-2 leading-snug mb-2.5">
-                    {node.scenario.skill || node.scenario.category_name_vi}
-                  </div>
+                    <div className="text-xs font-bold text-slate-900 line-clamp-1 leading-snug">
+                      {node.scamArt.label}
+                    </div>
 
-                  <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-[11px]">
-                    <span className="text-slate-500 font-medium">
-                      {node.scenario.question_type === "branching_scenario"
-                        ? "Hội thoại phân nhánh"
-                        : node.scenario.question_type === "hotspot"
-                        ? "Tìm điểm khả nghi"
-                        : "Trắc nghiệm tình huống"}
-                    </span>
-                    {node.isCompleted ? (
-                      <span className="text-emerald-700 font-bold flex items-center gap-1">
-                        <Check className="w-3.5 h-3.5 text-emerald-600" /> Đã đạt
+                    <div className="text-[11px] text-slate-500 line-clamp-1">
+                      {node.scenario.skill || node.scenario.category_name_vi}
+                    </div>
+
+                    <div className="flex items-center justify-between pt-1 border-t border-slate-100 text-[11px]">
+                      <span className="text-slate-400 text-[10px]">
+                        {node.scenario.question_type === "branching_scenario"
+                          ? "Hội thoại"
+                          : node.scenario.question_type === "hotspot"
+                          ? "Soi bẫy"
+                          : "Trắc nghiệm"}
                       </span>
-                    ) : node.isCurrent ? (
-                      <span className="text-sky-700 font-bold flex items-center gap-1">
-                        Luyện ngay →
-                      </span>
-                    ) : node.isUnlocked ? (
-                      <span className="text-slate-600 font-bold">
-                        Mở ải
-                      </span>
-                    ) : (
-                      <span className="text-slate-400 font-medium flex items-center gap-1">
-                        <Lock className="w-3 h-3" /> Đang khóa
-                      </span>
-                    )}
+                      {node.isCompleted ? (
+                        <span className="text-emerald-700 font-bold flex items-center gap-1 text-[11px]">
+                          <Check className="w-3.5 h-3.5 text-emerald-600" /> Đã đạt
+                        </span>
+                      ) : node.isCurrent ? (
+                        <span className="text-sky-700 font-bold flex items-center gap-1 text-[11px]">
+                          Luyện ngay →
+                        </span>
+                      ) : node.isUnlocked ? (
+                        <span className="text-slate-600 font-bold text-[11px]">
+                          Mở ải
+                        </span>
+                      ) : (
+                        <span className="text-slate-400 font-medium flex items-center gap-1 text-[11px]">
+                          <Lock className="w-3 h-3" /> Khóa
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
