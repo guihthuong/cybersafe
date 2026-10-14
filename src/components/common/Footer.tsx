@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Shield } from "lucide-react";
 
 export function Footer() {
@@ -31,8 +32,12 @@ export function Footer() {
             <span>CyberSafe Quest — Dự án Tham Gia Cuộc Thi Khoa Học Kỹ Thuật</span>
           </div>
 
-          <div className="text-slate-500 font-medium">
-            Phục vụ nghiên cứu và nâng cao năng lực an toàn số cộng đồng
+          <div className="flex items-center gap-3 text-slate-500 font-medium">
+            <span>Phục vụ nghiên cứu và nâng cao năng lực an toàn số cộng đồng</span>
+            <span className="text-slate-300">•</span>
+            <Link href="/admin" className="text-slate-400 hover:text-sky-700 transition-colors font-medium">
+              Quản Trị & Số Liệu KHKT
+            </Link>
           </div>
         </div>
       </div>
