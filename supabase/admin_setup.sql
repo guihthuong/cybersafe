@@ -26,7 +26,10 @@ CREATE POLICY "Admins can view all progress" ON public.user_progress
 -- SET role = 'admin' 
 -- WHERE id IN (SELECT id FROM auth.users WHERE email = 'YOUR_EMAIL@gmail.com');
 
--- Cách B: Cấp quyền cho toàn bộ tài khoản có tên chứa 'admin' hoặc email chứa 'admin':
+-- Cách B: Cấp quyền cho tài khoản 'Lê Văn Nam':
+-- UPDATE public.user_profiles SET role = 'admin' WHERE display_name = 'Lê Văn Nam';
+
+-- Cách C: Cấp quyền cho toàn bộ tài khoản có tên chứa 'admin' hoặc email chứa 'admin':
 UPDATE public.user_profiles 
 SET role = 'admin' 
 WHERE display_name ILIKE '%admin%' 
