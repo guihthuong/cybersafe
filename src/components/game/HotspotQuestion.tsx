@@ -75,107 +75,121 @@ export function HotspotQuestion({
       </div>
 
       {/* Interactive Canvas */}
-      <div className="relative rounded-3xl border-3 border-slate-200 bg-white p-5 sm:p-7 shadow-xs">
-        <div className="text-xs font-black text-slate-400 uppercase tracking-widest text-center mb-4">
-          Tin nhắn mô phỏng (Bấm vào phần chữ hoặc liên kết bạn thấy bất thường)
+      <div className="relative rounded-3xl border-2 border-slate-200 bg-white p-5 sm:p-6 shadow-xs space-y-5">
+        <div className="text-xs font-bold text-slate-500 uppercase tracking-wider text-center">
+          Tin nhắn Zalo mô phỏng gửi đến thiết bị
         </div>
 
         {/* Message visual */}
-        <div className="relative max-w-lg mx-auto bg-slate-50 rounded-3xl border-2 border-slate-300 p-5 shadow-xs">
+        <div className="relative max-w-xl mx-auto bg-slate-50 rounded-2xl border border-slate-200 p-5 shadow-xs space-y-4">
           {/* Header */}
           <div className="flex items-center gap-3 pb-3 border-b border-slate-200">
-            <div className="w-10 h-10 rounded-xl bg-rose-50 border border-rose-300 flex items-center justify-center text-rose-600 shadow-xs">
-              <ShieldAlert className="w-5 h-5" />
+            <div className="w-10 h-10 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-sm shadow-xs shrink-0">
+              C06
             </div>
             <div>
-              <div className="text-base font-black text-slate-900 flex items-center gap-2">
-                Thông Báo Đáng Ngờ
-                <span className="text-xs bg-rose-100 text-rose-700 px-2 py-0.5 rounded-full font-bold border border-rose-200">
-                  Cần kiểm tra
-                </span>
+              <div className="text-sm sm:text-base font-bold text-slate-900">
+                {scenario.stimulus.sender || "Cán Bộ Hỗ Trợ VNeID"}
               </div>
-              <div className="text-xs text-slate-500 font-medium">Tin nhắn gửi đến thiết bị</div>
+              <div className="text-xs text-slate-500">Tin nhắn Zalo đến số điện thoại cá nhân</div>
             </div>
           </div>
 
-          {/* Message Body */}
-          <div className="mt-4 p-5 rounded-2xl bg-white border-2 border-slate-200 text-base leading-relaxed text-slate-900 space-y-3 font-medium">
-            <p className="font-semibold text-slate-800">
-              {scenario.context}
+          {/* Message Content Bubble */}
+          <div className="p-4 rounded-xl bg-white border border-slate-200 text-sm leading-relaxed text-slate-800 shadow-2xs">
+            <p className="italic">
+              &ldquo;{scenario.stimulus.content || scenario.context}&rdquo;
             </p>
+          </div>
 
-            {/* Hotspots Interactive Items */}
-            <div className="p-4 rounded-xl bg-slate-100 border-2 border-dashed border-slate-300 flex flex-wrap items-center gap-2 font-mono text-sm sm:text-base font-bold">
-              {hotspots.map((spot, idx) => (
-                <button
-                  key={spot.id}
-                  onClick={() => handleSpotClick(spot)}
-                  className={`px-3 py-1.5 rounded-xl cursor-pointer transition-all ${
-                    clickedSpotIds.includes(spot.id)
-                      ? spot.is_suspicious
-                        ? "bg-rose-500 text-white font-black ring-3 ring-rose-300 shadow-sm"
-                        : "bg-slate-300 text-slate-800 font-bold"
-                      : "bg-white hover:bg-amber-100 border border-slate-300 text-sky-700 underline"
-                  }`}
-                >
-                  {spot.title}
-                  {clickedSpotIds.includes(spot.id) && spot.is_suspicious && (
-                    <Check className="w-4 h-4 inline ml-1.5" />
-                  )}
-                </button>
-              ))}
+          {/* Inspection Choices Prompt */}
+          <div className="space-y-2 pt-2">
+            <div className="text-xs font-bold text-slate-700 uppercase tracking-wide">
+              Bấm vào các chi tiết bạn nghi ngờ là bẫy lừa đảo:
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {hotspots.map((spot, idx) => {
+                const isClicked = clickedSpotIds.includes(spot.id);
+                let btnStyle = "bg-white hover:bg-slate-100 border-slate-300 text-slate-800";
+
+                if (isClicked) {
+                  if (spot.is_suspicious) {
+                    btnStyle = "bg-rose-50 border-rose-400 text-rose-900 font-bold ring-2 ring-rose-200";
+                  } else {
+                    btnStyle = "bg-slate-100 border-slate-300 text-slate-500";
+                  }
+                }
+
+                return (
+                  <button
+                    key={spot.id}
+                    onClick={() => handleSpotClick(spot)}
+                    className={`p-3 rounded-xl border text-left text-xs sm:text-sm font-semibold transition-all cursor-pointer flex items-center justify-between gap-2 shadow-2xs ${btnStyle}`}
+                  >
+                    <span className="leading-snug">{spot.title}</span>
+                    {isClicked && (
+                      <span className="shrink-0 text-xs font-bold">
+                        {spot.is_suspicious ? "⚠️ Bẫy lừa đảo" : "ℹ️ Bình thường"}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>
 
-        {/* Found Spots Checklist */}
-        <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-lg mx-auto">
-          {requiredSpots.map((spot) => {
-            const isFound = clickedSpotIds.includes(spot.id);
-            return (
-              <div
-                key={spot.id}
-                onClick={() => handleSpotClick(spot)}
-                className={`p-3.5 rounded-2xl border-2 text-xs sm:text-sm cursor-pointer transition-all flex items-center justify-between font-bold ${
-                  isFound
-                    ? "bg-emerald-50 border-emerald-300 text-emerald-900"
-                    : "bg-slate-50 border-slate-200 text-slate-500 hover:border-slate-300"
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  {isFound ? (
-                    <CheckCircle className="w-5 h-5 text-emerald-600 shrink-0" />
-                  ) : (
-                    <HelpCircle className="w-5 h-5 text-slate-400 shrink-0" />
-                  )}
-                  <span>{spot.title}</span>
+        {/* Found Spots Checklist (KHÔNG LỘ ĐÁP ÁN TRƯỚC) */}
+        <div className="pt-2 border-t border-slate-100">
+          <div className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 text-center">
+            Tiến độ tìm bẫy lừa đảo ({foundSuspiciousCount} / {requiredSpots.length} dấu hiệu)
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-w-xl mx-auto">
+            {requiredSpots.map((spot, idx) => {
+              const isFound = clickedSpotIds.includes(spot.id);
+              return (
+                <div
+                  key={spot.id}
+                  className={`p-3 rounded-xl border text-xs sm:text-sm font-bold flex items-center justify-between transition-colors ${
+                    isFound
+                      ? "bg-emerald-50 border-emerald-300 text-emerald-900"
+                      : "bg-slate-50 border-slate-200 text-slate-400"
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="w-5 h-5 rounded-full flex items-center justify-center font-bold text-xs bg-white border border-slate-200 shrink-0">
+                      {idx + 1}
+                    </span>
+                    <span>
+                      {isFound ? spot.title : `Dấu hiệu nguy hiểm #${idx + 1}`}
+                    </span>
+                  </div>
+                  <span className="text-[11px] uppercase tracking-wide">
+                    {isFound ? "Đã phát hiện ✓" : "Chưa tìm ra ?"}
+                  </span>
                 </div>
-                <span className="text-xs uppercase font-black">
-                  {isFound ? "Đã phát hiện" : "Chưa bấm"}
-                </span>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
       </div>
 
-      {/* Tooltip Card */}
+      {/* Tooltip / Explanation Card */}
       {activeTooltip && (
         <div
-          className={`p-5 rounded-2xl border-2 transition-all text-sm sm:text-base ${
+          className={`p-4 rounded-xl border text-xs sm:text-sm ${
             activeTooltip.is_suspicious
-              ? "bg-amber-50 border-amber-300 text-amber-950 font-medium"
+              ? "bg-rose-50/70 border-rose-300 text-rose-950 font-medium"
               : "bg-slate-50 border-slate-200 text-slate-800"
           }`}
         >
-          <div className="flex items-center gap-2 font-black mb-1.5">
-            {activeTooltip.is_suspicious ? (
-              <AlertTriangle className="w-5 h-5 text-amber-600" />
-            ) : (
-              <Info className="w-5 h-5 text-sky-600" />
-            )}
+          <div className="font-bold mb-1 flex items-center gap-1.5">
             <span>
-              {activeTooltip.is_suspicious ? "Dấu hiệu đáng ngờ:" : "Nhận định chuyên môn:"}{" "}
+              {activeTooltip.is_suspicious
+                ? "Dấu hiệu bẫy lừa đảo chính xác:"
+                : "Phân tích chi tiết:"}{" "}
               {activeTooltip.title}
             </span>
           </div>

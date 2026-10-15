@@ -179,43 +179,43 @@ export const SCENARIO_Q1_3: Scenario = {
     hotspots: [
       {
         id: "spot_fake_domain",
-        title: "Tên miền lạ đuôi .top",
+        title: "Địa chỉ web: https://vneid-capnhat.top",
         x: 32,
         y: 60,
         width: 36,
         height: 12,
         is_suspicious: true,
-        clue: "Địa chỉ website dùng đuôi '.top' (vneid-capnhat.top). Tất cả cổng dịch vụ công của cơ quan Nhà nước Việt Nam bắt buộc phải dùng tên miền quốc gia '.gov.vn'."
+        clue: "Dấu hiệu bẫy: Tên miền có đuôi lạ '.top' (vneid-capnhat.top). Mọi cổng dịch vụ công chính thống của Nhà nước bắt buộc phải dùng đuôi '.gov.vn'."
       },
       {
         id: "spot_apk_extension",
-        title: "Tệp cài đặt mã độc .apk",
+        title: "Đường dẫn tệp tải về: /app.apk",
         x: 68,
         y: 60,
         width: 24,
         height: 12,
         is_suspicious: true,
-        clue: "Đuôi tệp là '/app.apk'. Ứng dụng VNeID chỉ được cài đặt trực tiếp từ CH Play (Android) hoặc App Store (iOS), tuyệt đối không bao giờ gửi file .apk qua Zalo/tin nhắn."
+        clue: "Dấu hiệu bẫy: Đuôi tệp là '.apk'. Cơ quan chức năng không bao giờ gửi link tải file cài đặt ngoài qua Zalo. Ứng dụng VNeID chỉ được tải từ Google Play hoặc App Store."
       },
       {
         id: "spot_avatar",
-        title: "Ảnh đại diện công an",
+        title: "Ảnh đại diện: Huy hiệu Công an",
         x: 4,
         y: 8,
         width: 14,
         height: 25,
         is_suspicious: false,
-        clue: "Ảnh đại diện công an có thể dễ dàng tải trên mạng và đặt làm avatar Zalo giả danh, không phải căn cứ an toàn."
+        clue: "Ảnh đại diện không phải căn cứ xác thực: Kẻ lừa đảo có thể dễ dàng tải ảnh công an trên mạng về làm avatar để tạo lòng tin."
       },
       {
         id: "spot_deadline_threat",
-        title: "Dọa khóa mã định danh trước 17h00",
+        title: "Yêu cầu: Cập nhật gấp trước 17h00",
         x: 22,
         y: 75,
         width: 60,
         height: 12,
         is_suspicious: false,
-        clue: "Chiêu trò tạo áp lực thời gian gấp gáp để nạn nhân không kịp suy nghĩ."
+        clue: "Chiêu trò tâm lý: Thúc ép thời gian để bạn hoảng sợ, không kịp hỏi ý kiến người thân hoặc cơ quan công an."
       }
     ]
   },
