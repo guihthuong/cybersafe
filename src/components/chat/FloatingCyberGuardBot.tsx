@@ -107,16 +107,16 @@ export function FloatingCyberGuardBot() {
 
       {/* Floating Chat Window */}
       {isOpen && (
-        <div className="fixed bottom-24 right-4 sm:right-6 z-50 w-[calc(100vw-2rem)] sm:w-96 max-h-[82vh] h-[580px] bg-white rounded-3xl border-2 border-slate-300 shadow-2xl flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-6 duration-200">
+        <div className="fixed bottom-24 right-4 sm:right-6 z-50 w-[calc(100vw-2rem)] sm:w-[460px] md:w-[490px] max-h-[85vh] h-[620px] bg-white rounded-3xl border-2 border-slate-300 shadow-2xl flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-6 duration-200">
           {/* Header */}
-          <div className="p-4 bg-gradient-to-r from-sky-600 to-indigo-600 text-white flex items-center justify-between shadow-xs">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center font-bold text-white">
+          <div className="p-3.5 sm:p-4 bg-gradient-to-r from-sky-600 to-indigo-600 text-white flex items-center justify-between shadow-xs">
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center font-bold text-white shrink-0">
                 <Bot className="w-5 h-5" />
               </div>
               <div>
                 <h3 className="font-black text-sm leading-tight flex items-center gap-1.5">
-                  CyberGuardBot
+                  <span>CyberGuardBot</span>
                   <span className="text-[10px] bg-emerald-400 text-emerald-950 font-black px-1.5 py-0.2 rounded-full">
                     AI Online
                   </span>
@@ -125,56 +125,74 @@ export function FloatingCyberGuardBot() {
               </div>
             </div>
 
-            <button
-              onClick={() => setIsOpen(false)}
-              className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition-colors text-white cursor-pointer"
-            >
-              <X className="w-4 h-4" />
-            </button>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() =>
+                  setConversation([
+                    {
+                      sender: "bot",
+                      text: "Xin chào bạn! Tôi là CyberGuardBot — Trợ lý AI chuyên hỗ trợ phân tích rủi ro và ra quyết định an toàn số. Bạn nhận được tin nhắn, cuộc gọi hoặc đường link đáng ngờ nào không? Hãy nhập vào đây để tôi kiểm tra ngay nhé!",
+                      time: "Vừa xong",
+                    },
+                  ])
+                }
+                title="Làm mới đoạn chat"
+                className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition-colors text-white cursor-pointer"
+              >
+                <RotateCcw className="w-4 h-4" />
+              </button>
+
+              <button
+                onClick={() => setIsOpen(false)}
+                className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition-colors text-white cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
           </div>
 
           {/* Quick Preset Prompts */}
-          <div className="px-3 py-2 bg-slate-50 border-b border-slate-200 flex items-center gap-2 overflow-x-auto text-xs whitespace-nowrap scrollbar-none">
+          <div className="px-3 py-2 bg-slate-50 border-b border-slate-200 flex items-center gap-2 overflow-x-auto text-xs whitespace-nowrap scrollbar-thin">
             <button
               onClick={() => handleSend("Tin nhắn đòi tiền cấp cứu")}
-              className="px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:border-sky-300 hover:bg-sky-50 text-slate-700 font-semibold cursor-pointer shrink-0"
+              className="px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:border-sky-300 hover:bg-sky-50 text-slate-700 font-semibold cursor-pointer shrink-0 transition-colors"
             >
               🚑 Đòi tiền cấp cứu
             </button>
             <button
               onClick={() => handleSend("Công an dọa bắt chuyển tiền")}
-              className="px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:border-sky-300 hover:bg-sky-50 text-slate-700 font-semibold cursor-pointer shrink-0"
+              className="px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:border-sky-300 hover:bg-sky-50 text-slate-700 font-semibold cursor-pointer shrink-0 transition-colors"
             >
               👮 Công an dọa bắt
             </button>
             <button
               onClick={() => handleSend("Cập nhật VNeID tải app .apk")}
-              className="px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:border-sky-300 hover:bg-sky-50 text-slate-700 font-semibold cursor-pointer shrink-0"
+              className="px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:border-sky-300 hover:bg-sky-50 text-slate-700 font-semibold cursor-pointer shrink-0 transition-colors"
             >
               📱 Cài file .apk
             </button>
           </div>
 
           {/* Messages Body */}
-          <div className="flex-1 p-4 overflow-y-auto space-y-3.5 bg-slate-50/50">
+          <div className="flex-1 p-3.5 sm:p-4 overflow-y-auto space-y-3.5 bg-slate-50/50">
             {conversation.map((msg, i) => (
               <div
                 key={i}
-                className={`flex flex-col ${msg.sender === "user" ? "items-end" : "items-start"}`}
+                className={`flex flex-col w-full ${msg.sender === "user" ? "items-end" : "items-start"}`}
               >
                 <div
-                  className={`max-w-[85%] p-3.5 rounded-2xl text-xs sm:text-sm font-medium leading-relaxed ${
+                  className={`p-3 sm:p-3.5 rounded-2xl text-xs sm:text-sm font-medium leading-relaxed ${
                     msg.sender === "user"
-                      ? "bg-sky-600 text-white rounded-tr-xs"
-                      : "bg-white text-slate-900 border border-slate-200 shadow-2xs rounded-tl-xs"
+                      ? "max-w-[85%] bg-sky-600 text-white rounded-tr-xs"
+                      : "max-w-[95%] bg-white text-slate-900 border border-slate-200 shadow-2xs rounded-tl-xs"
                   }`}
                 >
                   <p>{msg.text}</p>
                 </div>
 
                 {msg.analysis && (
-                  <div className="mt-2 w-full max-w-full">
-                    <RiskAnalysisCard analysis={msg.analysis} />
+                  <div className="mt-2 w-full">
+                    <RiskAnalysisCard analysis={msg.analysis} compact={true} />
                   </div>
                 )}
 
@@ -185,9 +203,9 @@ export function FloatingCyberGuardBot() {
             ))}
 
             {isAnalyzing && (
-              <div className="flex items-center gap-2 p-3 rounded-2xl bg-white border border-slate-200 text-xs text-sky-700 font-bold max-w-[70%] shadow-2xs animate-pulse">
-                <Sparkles className="w-4 h-4 animate-spin" />
-                <span>Đang phân tích dấu hiệu rủi ro...</span>
+              <div className="flex items-center gap-2 p-3 rounded-2xl bg-white border border-slate-200 text-xs text-sky-700 font-bold max-w-[80%] shadow-2xs animate-pulse">
+                <Sparkles className="w-4 h-4 animate-spin text-sky-600" />
+                <span>Đang phân tích dấu hiệu rủi ro & bóc tách thủ đoạn...</span>
               </div>
             )}
           </div>
