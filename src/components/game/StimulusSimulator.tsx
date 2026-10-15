@@ -2,6 +2,7 @@
 
 import { Scenario, StimulusData } from "@/types/scenario";
 import { parseScenarioStory } from "@/utils/scenarioStoryParser";
+import { HighlightKeywords } from "@/utils/textHighlighter";
 import { PhoneCall, AlertTriangle, Globe, Lock, Shield, MessageSquare, User, UserCheck } from "lucide-react";
 
 interface StimulusSimulatorProps {
@@ -85,7 +86,7 @@ export function StimulusSimulator({ stimulus, contextText, scenario }: StimulusS
                   <span>Lời thoại phát ra từ loa:</span>
                 </div>
                 <p className="text-xs sm:text-sm text-slate-800 font-semibold leading-relaxed">
-                  &ldquo;{displayContent}&rdquo;
+                  &ldquo;<HighlightKeywords text={displayContent || ""} />&rdquo;
                 </p>
               </div>
             </div>

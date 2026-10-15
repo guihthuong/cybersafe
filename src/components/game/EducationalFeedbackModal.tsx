@@ -1,9 +1,21 @@
 "use client";
 
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import confetti from "canvas-confetti";
 import { EducationalFeedback, Scenario } from "@/types/scenario";
-import { X, CheckCircle, ArrowRight, RotateCcw, AlertTriangle, ShieldCheck } from "lucide-react";
+import { HighlightKeywords } from "@/utils/textHighlighter";
+import {
+  X,
+  CheckCircle,
+  ArrowRight,
+  RotateCcw,
+  AlertTriangle,
+  ShieldCheck,
+  ChevronDown,
+  ChevronUp,
+  PhoneCall,
+  Info,
+} from "lucide-react";
 
 interface EducationalFeedbackModalProps {
   isOpen: boolean;
@@ -27,174 +39,176 @@ export function EducationalFeedbackModal({
   hasNext = true,
 }: EducationalFeedbackModalProps) {
   const { feedback, consequence } = scenario;
+  const [showFullDetails, setShowFullDetails] = useState(false);
 
   useEffect(() => {
     if (isOpen && passedSafely) {
       try {
         confetti({
-          particleCount: 80,
-          spread: 70,
+          particleCount: 60,
+          spread: 60,
           origin: { y: 0.6 },
-          colors: ["#0284c7", "#10b981", "#f59e0b"],
+          colors: ["#2563eb", "#10b981", "#f59e0b"],
         });
       } catch (e) {
         // Safe fallback
       }
     }
+    // Reset view
+    setShowFullDetails(false);
   }, [isOpen, passedSafely]);
 
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-slate-900/60 backdrop-blur-md overflow-y-auto">
-      <div className="relative w-full max-w-2xl rounded-3xl bg-white border-2 border-slate-200 shadow-2xl p-6 sm:p-8 my-6 text-slate-900 flex flex-col gap-5 max-h-[92vh] overflow-y-auto">
-        {/* Sticky Header with Close Button */}
-        <div className="sticky -top-6 -mt-2 -mx-6 px-6 pt-4 pb-4 bg-white/95 backdrop-blur-md border-b border-slate-200 z-40 flex items-start justify-between gap-4">
-          <div className="flex flex-col gap-1.5">
-            <div className="flex flex-wrap items-center gap-2">
-              <span
-                className={`text-xs font-mono font-bold px-3 py-1 rounded-md border flex items-center gap-1.5 ${
-                  passedSafely
-                    ? "bg-emerald-50 text-emerald-800 border-emerald-300"
-                    : "bg-rose-50 text-rose-800 border-rose-300"
-                }`}
-              >
-                {passedSafely ? (
-                  <>
-                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-                    <span>KẾT QUẢ: XỬ LÝ AN TOÀN CHUẨN XÁC</span>
-                  </>
-                ) : (
-                  <>
-                    <AlertTriangle className="w-3.5 h-3.5 text-rose-600" />
-                    <span>CẢNH BÁO: CHƯA ĐẠT CHUẨN AN TOÀN</span>
-                  </>
-                )}
-              </span>
+      <div className="relative w-full max-w-xl rounded-3xl bg-white border-2 border-slate-300 shadow-2xl p-5 sm:p-6 my-4 text-slate-900 flex flex-col gap-4 max-h-[94vh] overflow-y-auto">
+        {/* Header: Kết quả súc tích */}
+        <div className="flex items-center justify-between pb-3 border-b border-slate-200">
+          <div className="flex items-center gap-2">
+            <span
+              className={`text-xs font-black px-3 py-1 rounded-full border flex items-center gap-1.5 ${
+                passedSafely
+                  ? "bg-emerald-50 text-emerald-800 border-emerald-300"
+                  : "bg-rose-50 text-rose-800 border-rose-300"
+              }`}
+            >
+              {passedSafely ? (
+                <>
+                  <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                  <span>XỬ LÝ AN TOÀN CHUẨN XÁC</span>
+                </>
+              ) : (
+                <>
+                  <AlertTriangle className="w-4 h-4 text-rose-600" />
+                  <span>CHƯA ĐẠT CHUẨN AN TOÀN</span>
+                </>
+              )}
+            </span>
 
-              <span className="text-xs uppercase font-bold px-2.5 py-1 rounded-md bg-slate-100 text-slate-700 border border-slate-300">
-                {feedback.core_rule}
-              </span>
-            </div>
-
-            <h3 className="text-lg sm:text-xl font-black text-slate-900 leading-snug">
-              {passedSafely
-                ? "Đánh Giá: Bạn Đã Bảo Vệ Bản Thân An Toàn"
-                : "Khuyến Nghị: Hành Động Rủi Ro Cần Khắc Phục"}
-            </h3>
+            <span className="text-xs uppercase font-bold px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
+              Quy tắc: {feedback.core_rule}
+            </span>
           </div>
 
           <button
             onClick={onClose}
-            className="p-2 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors cursor-pointer shrink-0"
+            className="p-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-900 transition-colors cursor-pointer"
             aria-label="Đóng"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Contextual Visual Feedback Card */}
-        <div className={`p-4 sm:p-5 rounded-2xl border-2 flex items-center justify-between gap-4 ${
-          passedSafely ? "bg-emerald-50/60 border-emerald-200" : "bg-rose-50/60 border-rose-200"
-        }`}>
-          <div className="space-y-1">
-            <span className={`text-[11px] font-black uppercase tracking-wider ${
+        {/* 1. KHỐI BÀI HỌC CỐT LÕI (NỔI BẬT NHẤT - ĐẬP VÀO MẮT NGAY LẬP TỨC) */}
+        <div
+          className={`p-4 sm:p-5 rounded-2xl border-2 space-y-1.5 ${
+            passedSafely
+              ? "bg-emerald-50/70 border-emerald-300"
+              : "bg-rose-50/70 border-rose-300"
+          }`}
+        >
+          <div
+            className={`text-xs font-black uppercase tracking-wider flex items-center gap-1.5 ${
               passedSafely ? "text-emerald-800" : "text-rose-800"
-            }`}>
-              {passedSafely ? "Phản Xạ Tự Vệ Số Xuất Sắc" : "Cảnh Báo Thủ Đoạn Tinh Vi"}
+            }`}
+          >
+            <ShieldCheck className="w-4 h-4" />
+            <span>BÀI HỌC CỐT LÕI CẦN NHỚ:</span>
+          </div>
+          <p className="text-sm sm:text-base font-bold text-slate-900 leading-snug">
+            <HighlightKeywords text={feedback.safe_action} />
+          </p>
+        </div>
+
+        {/* 2. CÁC ĐIỂM QUAN TRỌNG CẦN NHỚ (NGẮN GỌN - TÔ ĐẬM TỪ KHÓA) */}
+        <div className="space-y-2.5">
+          {/* Dấu hiệu nhận biết */}
+          <div className="p-3.5 rounded-2xl bg-amber-50/60 border border-amber-200 space-y-1.5">
+            <div className="text-xs font-black text-amber-900 uppercase flex items-center gap-1.5">
+              <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
+              <span>Dấu hiệu lạ vừa xuất hiện:</span>
+            </div>
+            <ul className="space-y-1 text-xs sm:text-sm text-slate-800 font-medium">
+              {feedback.red_flags.slice(0, 2).map((flag, idx) => (
+                <li key={idx} className="flex items-start gap-2">
+                  <span className="text-amber-600 font-black">•</span>
+                  <span>
+                    <HighlightKeywords text={flag} />
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Hotline khẩn cấp */}
+          <div className="p-3 rounded-2xl bg-blue-50/60 border border-blue-200 flex flex-wrap items-center justify-between gap-2 text-xs font-bold text-slate-800">
+            <span className="flex items-center gap-1.5 text-blue-900">
+              <PhoneCall className="w-3.5 h-3.5 text-blue-600" />
+              <span>Tổng đài hỗ trợ khẩn cấp:</span>
             </span>
-            <p className="text-xs sm:text-sm font-semibold text-slate-800 leading-snug">
-              {passedSafely
-                ? "Bạn đã nhận diện chính xác dấu hiệu bất thường và bảo vệ tài sản số thành công!"
-                : "Thủ đoạn lừa đảo này rất dễ khiến nạn nhân mất bình tĩnh. Hãy cùng phân tích các điểm đáng ngờ dưới đây."}
-            </p>
-          </div>
-
-          <div className="relative w-20 h-20 sm:w-24 sm:h-24 shrink-0 flex items-center justify-center">
-            <div className={`w-full h-full hover-tilt flex items-center justify-center ${
-              passedSafely ? "animate-float-slow" : "animate-sway-gentle"
-            }`}>
-              <img
-                src={passedSafely ? "/images/cybersecurity.png" : "/images/stealing OTP.png"}
-                alt={passedSafely ? "Bảo vệ an toàn" : "Nguy cơ chiếm đoạt"}
-                className="w-full h-full object-contain drop-shadow-sm select-none"
-              />
+            <div className="flex items-center gap-2">
+              <span className="px-2 py-0.5 rounded-md bg-white border border-blue-200 text-blue-700 font-black">
+                113 (Công an)
+              </span>
+              <span className="px-2 py-0.5 rounded-md bg-white border border-blue-200 text-blue-700 font-black">
+                156 (Báo lừa đảo)
+              </span>
             </div>
           </div>
         </div>
 
-        {/* Cảnh báo nghiêm ngặt nếu chưa an toàn */}
-        {!passedSafely && (
-          <div className="p-4 rounded-2xl bg-rose-50 border-2 border-rose-200 text-rose-950 space-y-1">
-            <div className="font-black text-xs uppercase tracking-wider text-rose-800 flex items-center gap-1.5">
-              <AlertTriangle className="w-4 h-4 text-rose-600" />
-              <span>Yêu cầu quy chuẩn đề tài:</span>
-            </div>
-            <p className="text-xs sm:text-sm font-semibold leading-relaxed text-rose-900">
-              Bạn chưa thể mở khóa ải tiếp theo vì đã chọn phương án tiềm ẩn nguy hiểm. Vui lòng đọc kỹ giải thích bên dưới và bấm <strong>&ldquo;Thử Lại Ải Này&rdquo;</strong> để đưa ra quyết định an toàn!
-            </p>
-          </div>
-        )}
+        {/* 3. NÚT MỞ RỘNG XEM CHI TIẾT (MẶC ĐỊNH THU GỌN ĐỂ TRÁNH QUÁ TẢI CHỮ) */}
+        <div>
+          <button
+            onClick={() => setShowFullDetails(!showFullDetails)}
+            className="w-full py-2 px-3 rounded-xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-xs font-bold text-slate-600 flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+          >
+            <Info className="w-3.5 h-3.5 text-slate-500" />
+            <span>
+              {showFullDetails
+                ? "Thu gọn giải thích chi tiết"
+                : "Xem thêm giải thích tâm lý & hậu quả nếu làm theo"}
+            </span>
+            {showFullDetails ? (
+              <ChevronUp className="w-3.5 h-3.5" />
+            ) : (
+              <ChevronDown className="w-3.5 h-3.5" />
+            )}
+          </button>
 
-        {/* KHỐI 1: VÌ SAO LỰA CHỌN NÀY AN TOÀN / KHÔNG AN TOÀN + ĐỒNG CẢM KHÔNG ĐỔ LỖI */}
-        <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200">
-          <div className="text-slate-800 font-bold text-xs uppercase tracking-wider mb-2">
-            1. Góc nhìn Đồng Cảm & Không Đổ Lỗi Nạn Nhân:
-          </div>
-          <p className="text-sm sm:text-base leading-relaxed text-slate-800 font-medium italic">
-            &ldquo;{feedback.empathy_note}&rdquo;
-          </p>
-        </div>
+          {showFullDetails && (
+            <div className="mt-2.5 p-3.5 rounded-2xl bg-slate-50 border border-slate-200 space-y-2.5 text-xs text-slate-700">
+              {/* Empathy note */}
+              <div>
+                <strong className="text-slate-900 block mb-0.5">
+                  1. Đồng cảm & Không đổ lỗi nạn nhân:
+                </strong>
+                <p className="italic text-slate-600 leading-relaxed">
+                  &ldquo;{feedback.empathy_note}&rdquo;
+                </p>
+              </div>
 
-        {/* KHỐI 2: DẤU HIỆU (RED FLAGS) CẦN NHỚ */}
-        <div className="p-5 rounded-2xl bg-amber-50/50 border border-amber-200">
-          <div className="text-amber-900 font-bold text-xs uppercase tracking-wider mb-3">
-            2. Dấu hiệu nhận biết đáng ngờ (Red Flags) cốt lõi:
-          </div>
-          <ul className="space-y-2">
-            {feedback.red_flags.map((flag, idx) => (
-              <li key={idx} className="flex items-start gap-2.5 text-sm sm:text-base text-amber-950 font-medium">
-                <span className="w-5 h-5 rounded-md bg-amber-200 text-amber-900 flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">
-                  {idx + 1}
-                </span>
-                <span className="leading-relaxed">{flag}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        {/* KHỐI 3: CÁCH XỬ LÝ NGOÀI ĐỜI THỰC */}
-        <div className="p-5 rounded-2xl bg-sky-50/50 border border-sky-200">
-          <div className="text-sky-900 font-bold text-xs uppercase tracking-wider mb-2">
-            3. Phương án xử lý an toàn ngoài đời thực:
-          </div>
-          <p className="text-sm sm:text-base text-slate-900 leading-relaxed font-semibold">
-            {feedback.safe_action}
-          </p>
-
-          {feedback.hotline_or_official_channel && (
-            <div className="mt-3 pt-3 border-t border-sky-200 flex items-center gap-2 text-xs sm:text-sm text-sky-900 font-bold">
-              <span>Đường dây nóng chính thức: <strong>{feedback.hotline_or_official_channel}</strong></span>
+              {/* Consequence */}
+              <div className="pt-2 border-t border-slate-200">
+                <strong className="text-rose-700 block mb-0.5">
+                  2. Hậu quả thực tế nếu làm theo kẻ gian:
+                </strong>
+                <p className="text-slate-600 leading-relaxed font-medium">
+                  {consequence.description}
+                </p>
+              </div>
             </div>
           )}
         </div>
 
-        {/* HẬU QUẢ THỰC TẾ NẾU SẬP BẪY */}
-        <div className="p-4 rounded-2xl bg-rose-50/50 border border-rose-200 text-rose-950">
-          <div className="text-rose-800 font-bold text-xs uppercase tracking-wider mb-1">
-            4. Hệ quả thực tế nếu làm theo kẻ gian:
-          </div>
-          <div className="font-bold text-sm text-rose-900 mb-1">{consequence.title}</div>
-          <p className="text-xs sm:text-sm leading-relaxed text-rose-800 font-medium">{consequence.description}</p>
-        </div>
-
-        {/* FOOTER ACTIONS - Xử lý theo đúng chuẩn: Đúng mới qua, sai thì phải thử lại */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-3 border-t border-slate-100">
+        {/* FOOTER ACTIONS - GỌN GÀNG, RÕ RÀNG */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-2.5 pt-2 border-t border-slate-200">
           <button
             onClick={onClose}
-            className="w-full sm:w-auto px-5 py-3 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm transition-colors cursor-pointer"
+            className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition-colors cursor-pointer"
           >
-            Đóng bảng giải thích
+            Đóng
           </button>
 
           {passedSafely ? (
@@ -204,18 +218,18 @@ export function EducationalFeedbackModal({
                   onClose();
                   onNextQuestion();
                 }}
-                className="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-black text-base border-b-5 border-emerald-700 active:border-b-0 active:translate-y-1 shadow-md transition-all cursor-pointer flex items-center justify-center gap-2"
+                className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-black text-sm shadow-xs transition-all cursor-pointer flex items-center justify-center gap-2"
               >
                 <span>Qua Câu Tiếp Theo</span>
-                <ArrowRight className="w-5 h-5" />
+                <ArrowRight className="w-4 h-4" />
               </button>
             ) : (
               <button
                 onClick={onClose}
-                className="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-emerald-500 hover:bg-emerald-600 text-white font-black text-base border-b-5 border-emerald-700 active:border-b-0 active:translate-y-1 shadow-md transition-all cursor-pointer flex items-center justify-center gap-2"
+                className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm shadow-xs transition-all cursor-pointer flex items-center justify-center gap-2"
               >
-                <CheckCircle className="w-5 h-5" />
-                <span>Hoàn Thành Xuất Sắc Ải Này!</span>
+                <CheckCircle className="w-4 h-4" />
+                <span>Hoàn Thành Ải!</span>
               </button>
             )
           ) : (
@@ -224,10 +238,10 @@ export function EducationalFeedbackModal({
                 onClose();
                 if (onRetry) onRetry();
               }}
-              className="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-rose-600 hover:bg-rose-700 text-white font-black text-base border-b-5 border-rose-800 active:border-b-0 active:translate-y-1 shadow-md transition-all cursor-pointer flex items-center justify-center gap-2"
+              className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-black text-sm shadow-xs transition-all cursor-pointer flex items-center justify-center gap-2"
             >
-              <RotateCcw className="w-5 h-5" />
-              <span>Thử Lại Ải Này (Chọn Lại Hành Động An Toàn)</span>
+              <RotateCcw className="w-4 h-4" />
+              <span>Thử Lại Ải Này (Chọn Lại)</span>
             </button>
           )}
         </div>

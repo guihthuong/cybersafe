@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Scenario, BranchingNode } from "@/types/scenario";
+import { HighlightKeywords } from "@/utils/textHighlighter";
 import { ArrowRight, ShieldCheck, AlertCircle, RotateCcw, CheckCircle2, PhoneCall, AlertTriangle } from "lucide-react";
 
 interface BranchingScenarioQuestionProps {
@@ -168,7 +169,7 @@ export function BranchingScenarioQuestion({
                 <span>{promptIntro}</span>
               </div>
               <p className="text-sm sm:text-base text-slate-800 font-bold leading-relaxed">
-                &ldquo;{promptDialogue}&rdquo;
+                &ldquo;<HighlightKeywords text={promptDialogue} />&rdquo;
               </p>
             </div>
 
@@ -220,7 +221,7 @@ export function BranchingScenarioQuestion({
                       </div>
                       {speechText && (
                         <p className="text-xs sm:text-sm text-slate-600 font-medium leading-relaxed italic">
-                          &ldquo;{speechText}&rdquo;
+                          &ldquo;<HighlightKeywords text={speechText} />&rdquo;
                         </p>
                       )}
                     </div>
