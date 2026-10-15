@@ -145,16 +145,16 @@ const CATEGORY_ICONS = [
 
 export function CategoryGrid() {
   return (
-    <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-slate-950 via-slate-900 to-sky-950 text-white border-b border-sky-900/30">
+    <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white border-b border-slate-200">
       <div className="max-w-6xl mx-auto space-y-12">
         <div className="text-center max-w-3xl mx-auto space-y-3">
-          <span className="text-xs font-black uppercase tracking-widest text-sky-400 bg-sky-950/80 px-3.5 py-1 rounded-full border border-sky-500/30">
+          <span className="text-xs font-black uppercase tracking-widest text-blue-700 bg-blue-50 px-3.5 py-1 rounded-full border border-blue-200">
             KHO DỮ LIỆU ĐỜI THỰC
           </span>
-          <h2 className="text-3xl sm:text-4xl font-black text-white tracking-tight">
+          <h2 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
             11 Nhóm Chiêu Thức Thường Gặp
           </h2>
-          <p className="text-base sm:text-lg text-slate-300 font-medium leading-relaxed">
+          <p className="text-base sm:text-lg text-slate-600 font-medium leading-relaxed">
             Được tổng hợp từ các vụ việc thực tế tại Việt Nam, phân loại chi tiết giúp người học dễ dàng nhận diện và phòng ngừa.
           </p>
         </div>
@@ -168,48 +168,48 @@ export function CategoryGrid() {
             return (
               <div
                 key={cat.id}
-                className="rounded-3xl bg-slate-900/90 border-2 border-slate-800 hover:border-sky-500/50 hover:shadow-2xl p-5 flex flex-col justify-between transition-all duration-300 group space-y-4 backdrop-blur-md"
+                className="rounded-3xl bg-white border border-slate-200 hover:border-blue-400 hover:shadow-lg p-5 flex flex-col justify-between transition-all duration-300 group space-y-4 shadow-xs"
               >
                 {/* Card Top: Icon & Count */}
                 <div className="flex items-center justify-between pb-1">
                   <div className={`w-9 h-9 rounded-xl ${iconConfig.bg} border flex items-center justify-center shrink-0`}>
                     <Icon className={`w-5 h-5 ${iconConfig.color}`} />
                   </div>
-                  <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-sky-950 text-sky-300 border border-sky-800">
+                  <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
                     {cat.scenariosCount} ải tình huống
                   </span>
                 </div>
 
                 {/* Full Uncropped Illustration Image Display */}
-                <div className="w-full h-44 sm:h-48 rounded-2xl bg-slate-950 border border-slate-800 p-2.5 flex items-center justify-center group-hover:border-sky-500/40 group-hover:bg-sky-950/20 transition-all">
+                <div className="w-full h-44 sm:h-48 rounded-2xl bg-slate-50 border border-slate-200 p-2.5 flex items-center justify-center group-hover:border-blue-200 group-hover:bg-blue-50/20 transition-all">
                   <img
                     src={encodeURI(cat.imageUrl)}
                     alt={cat.name}
-                    className="w-full h-full object-contain drop-shadow-md group-hover:scale-105 transition-transform duration-300 select-none"
+                    className="w-full h-full object-contain drop-shadow-xs group-hover:scale-105 transition-transform duration-300 select-none"
                   />
                 </div>
 
                 {/* Title & Warning */}
                 <div className="space-y-2 flex-1">
-                  <h3 className="text-base font-black text-white group-hover:text-sky-300 transition-colors leading-snug line-clamp-2">
+                  <h3 className="text-base font-black text-slate-900 group-hover:text-blue-600 transition-colors leading-snug line-clamp-2">
                     {cat.name}
                   </h3>
 
-                  <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-300 leading-relaxed font-medium flex items-start gap-2">
-                    <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                  <div className="p-3 rounded-xl bg-amber-50/70 border border-amber-200 text-xs text-amber-900 leading-relaxed font-medium flex items-start gap-2">
+                    <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
                     <span className="line-clamp-2">{cat.warningNote}</span>
                   </div>
                 </div>
 
                 {/* Bottom Target & Action */}
-                <div className="pt-3 border-t border-slate-800 flex items-center justify-between text-xs">
-                  <span className="text-slate-400 font-medium truncate max-w-[190px]">
-                    Đối tượng: <strong className="text-sky-300">{cat.vulnerableTarget}</strong>
+                <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+                  <span className="text-slate-500 font-medium truncate max-w-[190px]">
+                    Đối tượng: <strong className="text-slate-800">{cat.vulnerableTarget}</strong>
                   </span>
 
                   <Link
                     href={`/play/chuong-${idx + 1}`}
-                    className="px-4 py-2 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold flex items-center gap-1.5 shadow-md transition-all shrink-0 cursor-pointer"
+                    className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold flex items-center gap-1.5 shadow-xs transition-all shrink-0 cursor-pointer"
                   >
                     <span>Luyện tập</span>
                     <ArrowRight className="w-3.5 h-3.5" />
