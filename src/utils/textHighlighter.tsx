@@ -6,15 +6,17 @@ const RED_FLAG_KEYWORDS = [
   "45 tỷ",
   "300 triệu",
   "bắt tạm giam",
+  "bị áp giải",
+  "áp giải",
   "chuyển tiền",
   "chuyển ngay",
   "tài khoản tạm giữ",
   "tài khoản thanh tra",
+  "tài khoản ma",
   "mã OTP",
   "mật khẩu",
   "đe dọa",
   "khởi tố",
-  "áp giải",
   "bí mật",
   "tiết lộ",
   "tải app",
@@ -29,12 +31,17 @@ const RED_FLAG_KEYWORDS = [
   "30 phút",
   "bị khóa",
   "link lạ",
+  "zalo",
+  "đóng băng",
+  "phạt tù",
+  "mất trắng",
 ];
 
 // Danh sách từ khóa hành động an toàn (tô màu xanh ngọc / xanh lá để dễ nhớ)
 const SAFE_KEYWORDS = [
   "Dừng lại",
   "Cúp máy",
+  "Dập máy",
   "Kiểm tra",
   "Xác minh",
   "Mới hành động",
@@ -45,10 +52,13 @@ const SAFE_KEYWORDS = [
   "con cháu",
   "trực tiếp",
   "không chuyển tiền",
+  "không chuyển",
+  "tuyệt đối không",
   "không đọc mã OTP",
   "tổng đài chính thức",
   "báo cơ quan",
   "bình tĩnh",
+  "trình báo",
 ];
 
 /**
