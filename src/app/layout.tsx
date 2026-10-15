@@ -19,6 +19,7 @@ export const metadata: Metadata = {
 
 import { AuthProvider } from "@/context/AuthContext";
 import { AuthModal } from "@/components/auth/AuthModal";
+import { FloatingCyberGuardBot } from "@/components/chat/FloatingCyberGuardBot";
 
 export default function RootLayout({
   children,
@@ -33,6 +34,7 @@ export default function RootLayout({
           <main className="flex-1 flex flex-col">{children}</main>
           <Footer />
           <AuthModal />
+          <FloatingCyberGuardBot />
         </AuthProvider>
       </body>
     </html>

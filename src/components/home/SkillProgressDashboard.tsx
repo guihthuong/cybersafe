@@ -5,7 +5,7 @@ import { Users } from "lucide-react";
 export function SkillProgressDashboard() {
   const competencies = [
     {
-      name: "1. Năng lực Nhận diện (Detection)",
+      name: "1. Năng lực Nhận diện",
       desc: "Phát hiện link lạ (.cc, .top), tệp cài đặt đuôi .apk, tin nhắn mạo danh công an đòi chuyển tiền.",
       score: 85,
       level: "Tốt",
@@ -13,7 +13,7 @@ export function SkillProgressDashboard() {
       badgeColor: "bg-sky-50 text-sky-800 border-sky-200",
     },
     {
-      name: "2. Năng lực Kiểm chứng (Verification)",
+      name: "2. Năng lực Kiểm chứng",
       desc: "Biết tra cứu cổng dịch vụ công (.gov.vn), số hotline ngân hàng in trên thẻ ATM, gọi điện xác minh.",
       score: 92,
       level: "Xuất sắc",
@@ -21,7 +21,7 @@ export function SkillProgressDashboard() {
       badgeColor: "bg-emerald-50 text-emerald-800 border-emerald-200",
     },
     {
-      name: "3. Bảo vệ Tài khoản (Account Protection)",
+      name: "3. Năng lực Bảo vệ Tài khoản",
       desc: "Tuyệt đối không gửi mã OTP cho bất kỳ ai, không cài app ngoài cửa hàng CH Play / App Store.",
       score: 78,
       level: "Khá",
@@ -29,7 +29,7 @@ export function SkillProgressDashboard() {
       badgeColor: "bg-amber-50 text-amber-800 border-amber-200",
     },
     {
-      name: "4. Ứng phó Sự cố (Incident Response)",
+      name: "4. Năng lực Ứng phó Sự cố",
       desc: "Biết bật chế độ máy bay khi lỡ bấm link, khóa thẻ ngân hàng trên ứng dụng, báo Công an 113.",
       score: 80,
       level: "Tốt",
@@ -141,6 +141,37 @@ export function SkillProgressDashboard() {
                 </div>
               );
             })}
+          </div>
+        </div>
+
+        {/* Quy trình ứng phó cốt lõi (SmartArt Flowchart to rõ ràng theo góp ý PDF 1 trang 7) */}
+        <div className="p-6 rounded-3xl bg-slate-50 border-2 border-slate-300 shadow-sm space-y-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pb-3 border-b border-slate-200">
+            <span className="text-xs uppercase font-black text-sky-800 tracking-wider">
+              QUY TRÌNH ỨNG PHÓ CỐT LÕI
+            </span>
+            <span className="text-xs text-slate-600 font-semibold italic">
+              Triết lý giáo dục: Đồng cảm & Không đổ lỗi nạn nhân. Hướng dẫn kỹ năng thực tế bảo vệ gia đình trên không gian số.
+            </span>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-center">
+            <div className="p-3.5 rounded-2xl bg-white border-2 border-rose-300 shadow-2xs">
+              <span className="font-black text-rose-700 text-sm sm:text-base block">1. DỪNG LẠI</span>
+              <span className="text-[11px] text-slate-500 font-medium">Bình tĩnh 30 giây</span>
+            </div>
+            <div className="p-3.5 rounded-2xl bg-white border-2 border-amber-300 shadow-2xs">
+              <span className="font-black text-amber-700 text-sm sm:text-base block">2. KIỂM TRA</span>
+              <span className="text-[11px] text-slate-500 font-medium">Soi kỹ thông tin lạ</span>
+            </div>
+            <div className="p-3.5 rounded-2xl bg-white border-2 border-sky-300 shadow-2xs">
+              <span className="font-black text-sky-700 text-sm sm:text-base block">3. XÁC MINH</span>
+              <span className="text-[11px] text-slate-500 font-medium">Gọi người thân / Tổng đài</span>
+            </div>
+            <div className="p-3.5 rounded-2xl bg-white border-2 border-emerald-300 shadow-2xs">
+              <span className="font-black text-emerald-700 text-sm sm:text-base block">4. HÀNH ĐỘNG</span>
+              <span className="text-[11px] text-slate-500 font-medium">Xử lý an toàn dứt khoát</span>
+            </div>
           </div>
         </div>
 

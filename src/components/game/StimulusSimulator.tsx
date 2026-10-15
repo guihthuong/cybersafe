@@ -1,23 +1,52 @@
 "use client";
 
-import { StimulusData } from "@/types/scenario";
-import { PhoneCall, AlertTriangle, Globe, Lock, Shield, MessageSquare, User } from "lucide-react";
+import { Scenario, StimulusData } from "@/types/scenario";
+import { parseScenarioStory } from "@/utils/scenarioStoryParser";
+import { PhoneCall, AlertTriangle, Globe, Lock, Shield, MessageSquare, User, UserCheck } from "lucide-react";
 
 interface StimulusSimulatorProps {
   stimulus: StimulusData;
   contextText: string;
+  scenario?: Scenario;
 }
 
-export function StimulusSimulator({ stimulus, contextText }: StimulusSimulatorProps) {
+export function StimulusSimulator({ stimulus, contextText, scenario }: StimulusSimulatorProps) {
+  // Parse storyline if scenario is available, or create mock scenario for parser
+  const story = scenario
+    ? parseScenarioStory(scenario)
+    : parseScenarioStory({
+        scenario_id: "DEMO",
+        category: "bank_otp_fraud",
+        category_name_vi: "",
+        skill: "",
+        difficulty: "beginner",
+        question_type: "multiple_choice",
+        context: contextText,
+        stimulus,
+        options: {},
+        correct_answer: "",
+        feedback: { core_rule: "Dừng lại", empathy_note: "", red_flags: [], safe_action: "" },
+        consequence: { title: "", description: "", severity: "low" },
+      });
+
+  const displayContent = story.dialogueOrContent || stimulus.content;
+
   return (
     <div className="flex flex-col gap-4">
-      {/* Context banner - Light theme */}
-      <div className="p-5 rounded-3xl bg-white border-2 border-slate-200 text-slate-800 shadow-xs">
-        <div className="flex items-center gap-2 text-xs font-black text-sky-700 uppercase tracking-wider mb-2">
-          <Shield className="w-4 h-4 text-sky-600" />
-          <span>Bối cảnh tình huống thực tế</span>
+      {/* Kịch bản dẫn dắt tuần tự: Rõ ràng, dễ hiểu cho người già & trẻ em */}
+      <div className="p-4 sm:p-5 rounded-3xl bg-sky-50/90 border-2 border-sky-300 text-slate-800 shadow-xs space-y-2.5">
+        <div className="flex items-center justify-between gap-2 pb-2 border-b border-sky-200">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-sky-300 text-sky-900 text-xs sm:text-sm font-black shadow-2xs">
+            <UserCheck className="w-4 h-4 text-sky-700" />
+            <span>Vai trò: <strong className="text-sky-950 font-black">{story.role}</strong></span>
+          </div>
+          <span className="text-[11px] font-bold text-sky-800 bg-sky-200/70 px-2.5 py-0.5 rounded-full">
+            Tình huống đời thực
+          </span>
         </div>
-        <p className="text-base leading-relaxed text-slate-800 font-medium">{contextText}</p>
+        <p className="text-sm sm:text-base leading-relaxed text-slate-800 font-bold">
+          {story.eventIntro}
+        </p>
       </div>
 
       {/* Interactive Device Screen Simulator - Friendly Light Phone Frame */}
@@ -42,9 +71,9 @@ export function StimulusSimulator({ stimulus, contextText }: StimulusSimulatorPr
 
               <div>
                 <div className="text-xs uppercase tracking-widest text-slate-500 font-extrabold mb-1">
-                  Cuộc gọi đến • {stimulus.timestamp}
+                  Cuộc gọi đến • {stimulus.timestamp || "Vừa xong"}
                 </div>
-                <h3 className="text-lg sm:text-xl font-black text-slate-900">{stimulus.sender}</h3>
+                <h3 className="text-lg sm:text-xl font-black text-slate-900">{story.senderLabel || stimulus.sender}</h3>
                 <p className="text-xs text-rose-600 font-bold mt-0.5">
                   Đe dọa khởi tố • Ép giữ bí mật tuyệt đối
                 </p>
@@ -65,10 +94,10 @@ export function StimulusSimulator({ stimulus, contextText }: StimulusSimulatorPr
               <div className="w-full text-left p-4 rounded-2xl bg-white border-2 border-rose-200 shadow-xs">
                 <div className="text-xs font-black text-rose-700 mb-1 flex items-center gap-1.5">
                   <AlertTriangle className="w-4 h-4 text-rose-600" />
-                  <span>Lời thoại từ đối tượng:</span>
+                  <span>Lời thoại phát ra từ loa điện thoại:</span>
                 </div>
-                <p className="text-base text-slate-900 font-semibold leading-relaxed">
-                  {stimulus.content}
+                <p className="text-base sm:text-lg text-slate-900 font-bold leading-relaxed">
+                  &ldquo;{displayContent}&rdquo;
                 </p>
               </div>
 
@@ -95,25 +124,25 @@ export function StimulusSimulator({ stimulus, contextText }: StimulusSimulatorPr
                   <User className="w-5 h-5" />
                 </div>
                 <div>
-                  <h4 className="text-sm font-black text-slate-900 flex items-center gap-2">
-                    {stimulus.sender}
+                  <h4 className="text-sm sm:text-base font-black text-slate-900 flex items-center gap-2">
+                    {story.senderLabel || stimulus.sender}
                     <span className="text-[10px] px-2 py-0.2 rounded-full bg-amber-100 text-amber-800 border border-amber-300 font-bold">
                       Chưa xác minh
                     </span>
                   </h4>
-                  <p className="text-xs text-slate-500">Tin nhắn nhận lúc 14:20 • Zalo</p>
+                  <p className="text-xs text-slate-500">Tin nhắn nhận lúc 14:20 • Zalo/Mạng xã hội</p>
                 </div>
               </div>
 
               {/* Message Thread */}
               <div className="py-4 space-y-3">
-                <div className="text-center text-xs text-slate-400 font-semibold">{stimulus.timestamp}</div>
-                <div className="flex items-start gap-2.5 max-w-[90%]">
+                <div className="text-center text-xs text-slate-400 font-semibold">{stimulus.timestamp || "Hôm nay 14:20"}</div>
+                <div className="flex items-start gap-2.5 max-w-[95%]">
                   <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-slate-600 shrink-0">
                     <User className="w-4 h-4" />
                   </div>
-                  <div className="rounded-2xl rounded-tl-sm bg-white border-2 border-slate-200 p-4 text-slate-900 text-sm sm:text-base font-medium leading-relaxed shadow-xs">
-                    <p>{stimulus.content}</p>
+                  <div className="rounded-2xl rounded-tl-sm bg-white border-2 border-slate-200 p-4 text-slate-900 text-base sm:text-lg font-bold leading-relaxed shadow-xs">
+                    <p>{displayContent}</p>
                   </div>
                 </div>
               </div>
@@ -148,13 +177,13 @@ export function StimulusSimulator({ stimulus, contextText }: StimulusSimulatorPr
 
               {/* Browser mockup content */}
               <div className="p-5 text-center bg-white">
-                <div className="max-w-md mx-auto p-5 rounded-2xl bg-slate-50 border border-slate-200 text-left">
-                  <div className="flex items-center gap-2 mb-3 pb-2 border-b border-slate-200 text-sky-700 font-black text-sm">
+                <div className="max-w-md mx-auto p-5 rounded-2xl bg-slate-50 border border-slate-200 text-left space-y-3">
+                  <div className="flex items-center gap-2 pb-2 border-b border-slate-200 text-sky-700 font-black text-sm sm:text-base">
                     <Globe className="w-4 h-4" />
                     <span>Cổng Cập Nhật Sinh Trắc Học Khách Hàng ABC</span>
                   </div>
-                  <p className="text-sm text-slate-700 font-medium mb-3">{stimulus.content}</p>
-                  <div className="p-3 rounded-xl bg-amber-50 border border-amber-300 text-xs font-bold text-amber-900 flex items-start gap-2">
+                  <p className="text-sm sm:text-base text-slate-800 font-semibold leading-relaxed">{displayContent}</p>
+                  <div className="p-3 rounded-xl bg-amber-50 border border-amber-300 text-xs sm:text-sm font-bold text-amber-900 flex items-start gap-2">
                     <AlertTriangle className="w-4 h-4 shrink-0 text-amber-600 mt-0.5" />
                     <div>
                       <strong>Cảnh báo quan trọng:</strong> Soi kỹ phần đuôi tên miền gốc trước dấu gạch chéo đầu tiên!
@@ -171,13 +200,13 @@ export function StimulusSimulator({ stimulus, contextText }: StimulusSimulatorPr
               <div className="flex items-center justify-between pb-3 border-b border-slate-200">
                 <div className="flex items-center gap-2">
                   <MessageSquare className="w-4 h-4 text-sky-600" />
-                  <span className="font-black text-slate-900 text-sm">{stimulus.sender}</span>
+                  <span className="font-black text-slate-900 text-sm sm:text-base">{story.senderLabel || stimulus.sender}</span>
                 </div>
-                <span className="text-xs text-slate-500">{stimulus.timestamp}</span>
+                <span className="text-xs text-slate-500">{stimulus.timestamp || "Vừa xong"}</span>
               </div>
               <div className="py-4">
-                <div className="p-4 rounded-2xl rounded-tl-sm bg-white text-slate-900 text-base font-medium leading-relaxed border-2 border-slate-200 shadow-xs">
-                  {stimulus.content}
+                <div className="p-4 rounded-2xl rounded-tl-sm bg-white text-slate-900 text-base sm:text-lg font-bold leading-relaxed border-2 border-slate-200 shadow-xs">
+                  {displayContent}
                 </div>
               </div>
             </div>

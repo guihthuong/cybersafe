@@ -147,9 +147,6 @@ export function CategoryGrid() {
   return (
     <section className="py-14 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto border-t border-slate-200">
       <div className="text-center max-w-3xl mx-auto mb-12 space-y-3">
-        <div className="inline-flex items-center px-3.5 py-1 rounded-full bg-slate-100 border border-slate-200 text-slate-800 text-xs sm:text-sm font-semibold">
-          <span>Danh Mục Tình Huống Khoa Học</span>
-        </div>
         <h2 className="text-2xl sm:text-4xl font-black text-slate-900 tracking-tight">
           11 Nhóm Chiêu Thức Thường Gặp
         </h2>
@@ -161,7 +158,6 @@ export function CategoryGrid() {
       {/* Grid Cards - Clean, Readable, Full uncropped illustrations */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {CATEGORIES_DATA.map((cat, idx) => {
-          const groupCode = `Đề tài ${idx < 9 ? "0" : ""}${idx + 1}`;
           const iconConfig = CATEGORY_ICONS[idx % CATEGORY_ICONS.length];
           const Icon = iconConfig.icon;
 
@@ -170,18 +166,13 @@ export function CategoryGrid() {
               key={cat.id}
               className="rounded-3xl bg-white border border-slate-200 hover:border-sky-300 hover:shadow-xl p-5 flex flex-col justify-between transition-all duration-300 group space-y-4"
             >
-              {/* Card Top: Code Pill & Icon */}
+              {/* Card Top: Icon & Count */}
               <div className="flex items-center justify-between pb-1">
-                <div className="flex items-center gap-2">
-                  <div className={`w-8 h-8 rounded-xl ${iconConfig.bg} border flex items-center justify-center shrink-0`}>
-                    <Icon className={`w-4 h-4 ${iconConfig.color}`} />
-                  </div>
-                  <span className="font-mono text-xs font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md">
-                    {groupCode}
-                  </span>
+                <div className={`w-9 h-9 rounded-xl ${iconConfig.bg} border flex items-center justify-center shrink-0`}>
+                  <Icon className={`w-5 h-5 ${iconConfig.color}`} />
                 </div>
                 <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-sky-50 text-sky-700 border border-sky-200">
-                  {cat.scenariosCount} ải
+                  {cat.scenariosCount} ải tình huống
                 </span>
               </div>
 
@@ -208,8 +199,8 @@ export function CategoryGrid() {
 
               {/* Bottom Target & Action */}
               <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
-                <span className="text-slate-500 font-medium truncate max-w-[170px]">
-                  Nhắm: <strong className="text-slate-800">{cat.vulnerableTarget}</strong>
+                <span className="text-slate-500 font-medium truncate max-w-[190px]">
+                  Đối tượng hướng tới: <strong className="text-slate-800">{cat.vulnerableTarget}</strong>
                 </span>
 
                 <Link

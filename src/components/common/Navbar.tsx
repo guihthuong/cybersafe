@@ -16,6 +16,7 @@ export function Navbar() {
     { href: "/play", label: "Phòng Huấn Luyện" },
     { href: "/chatbot", label: "Kiểm Tra Tin Nhắn" },
     { href: "/guide", label: "Cẩm Nang An Toàn" },
+    { href: "/#ve-chung-toi", label: "Về Chúng Tôi" },
     ...(isAdmin ? [{ href: "/admin", label: "Quản Trị KHKT", isAdminOnly: true }] : []),
   ];
 

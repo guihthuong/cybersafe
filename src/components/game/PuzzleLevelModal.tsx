@@ -118,6 +118,7 @@ export function PuzzleLevelModal({
             <StimulusSimulator
               stimulus={scenario.stimulus}
               contextText={scenario.context}
+              scenario={scenario}
             />
           </div>
 

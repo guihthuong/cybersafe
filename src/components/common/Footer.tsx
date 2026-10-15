@@ -3,7 +3,7 @@ import { Shield } from "lucide-react";
 
 export function Footer() {
   return (
-    <footer className="border-t border-slate-200 bg-white text-slate-600 py-10 mt-auto">
+    <footer id="ve-chung-toi" className="border-t border-slate-200 bg-white text-slate-600 py-10 mt-auto">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
         {/* Slogan Bar - Professional Card */}
         <div className="p-5 sm:p-6 rounded-2xl bg-slate-50 border border-slate-200 flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left">

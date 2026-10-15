@@ -74,15 +74,15 @@ export function QuickMiniChallenge() {
               {/* Option A: ĐÚNG */}
               <button
                 onClick={() => handleChoose(true)}
-                className="p-4 rounded-2xl bg-white hover:bg-slate-50 text-slate-800 font-bold text-sm sm:text-base border border-slate-300 hover:border-slate-400 shadow-xs hover-lift transition-all flex items-center justify-center gap-2 cursor-pointer"
+                className="p-4 sm:p-5 rounded-2xl bg-white hover:bg-slate-50 text-slate-800 font-bold text-sm sm:text-base border-2 border-slate-300 hover:border-slate-400 shadow-xs hover-lift transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
                 <span>A. ĐÚNG — Chuyển tiền để hợp tác điều tra</span>
               </button>
 
-              {/* Option B: SAI */}
+              {/* Option B: SAI (Được giữ trung tính, không tô xanh trước làm lộ đáp án) */}
               <button
                 onClick={() => handleChoose(false)}
-                className="p-4 rounded-2xl bg-sky-600 hover:bg-sky-700 text-white font-bold text-sm sm:text-base shadow-sm hover-lift transition-all flex items-center justify-center gap-2 cursor-pointer"
+                className="p-4 sm:p-5 rounded-2xl bg-white hover:bg-slate-50 text-slate-800 font-bold text-sm sm:text-base border-2 border-slate-300 hover:border-slate-400 shadow-xs hover-lift transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
                 <span>B. SAI — Đây là hành vi mạo danh lừa đảo</span>
               </button>
