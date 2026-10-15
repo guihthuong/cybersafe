@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Scenario, MultipleChoiceOption } from "@/types/scenario";
 import { parseScenarioStory } from "@/utils/scenarioStoryParser";
+import { HighlightKeywords } from "@/utils/textHighlighter";
 import { CheckCircle2, XCircle, ArrowRight, RotateCcw, HelpCircle, Check } from "lucide-react";
 
 interface MultipleChoiceQuestionProps {
@@ -55,7 +56,7 @@ export function MultipleChoiceQuestion({
 
       {/* Options List - Chunky, High-contrast, Easy-to-tap Buttons */}
       <div className="space-y-2.5">
-        {options.map((opt) => {
+        {options.map((opt, idx) => {
           const isSelected = selectedOptionId === opt.id;
           let containerStyle =
             "bg-white border-2 border-slate-200 border-b-4 border-slate-300 hover:bg-slate-50 hover:border-blue-300 text-slate-900";
@@ -75,8 +76,11 @@ export function MultipleChoiceQuestion({
               "bg-blue-50 border-2 border-blue-600 border-b-4 border-blue-700 text-blue-950 font-bold shadow-xs";
           }
 
-          // Option letter A, B, C...
-          const letter = opt.id.toUpperCase();
+          // Hiển thị chữ cái A, B, C, D chuẩn xác, không bị lẫn OPT_A
+          const letter = String.fromCharCode(65 + idx);
+
+          // Loại bỏ tiền tố thừa như "A. ", "B. ", "C. ", "D. " nếu trong chuỗi đã có
+          const cleanText = opt.label.replace(/^[A-Da-d][.):\s-]+/, "").trim();
 
           return (
             <div
@@ -89,10 +93,10 @@ export function MultipleChoiceQuestion({
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-start gap-3 w-full">
                   <div
-                    className={`w-7 h-7 rounded-xl flex items-center justify-center font-black text-xs shrink-0 mt-0.5 transition-colors border ${
+                    className={`w-8 h-8 rounded-xl flex items-center justify-center font-black text-sm shrink-0 mt-0.5 transition-colors border ${
                       isSelected
                         ? "bg-blue-600 text-white border-blue-700 shadow-2xs"
-                        : "bg-slate-100 text-slate-700 border-slate-200"
+                        : "bg-slate-100 text-slate-700 border-slate-300"
                     }`}
                   >
                     {isSubmitted && opt.is_correct ? (
@@ -104,7 +108,7 @@ export function MultipleChoiceQuestion({
                     )}
                   </div>
                   <span className="text-sm sm:text-base font-bold leading-relaxed pt-0.5">
-                    {opt.label}
+                    <HighlightKeywords text={cleanText} />
                   </span>
                 </div>
               </div>
