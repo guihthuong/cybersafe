@@ -7,7 +7,7 @@ import { SkillProgressDashboard } from "@/components/home/SkillProgressDashboard
 
 export default function HomePage() {
   return (
-    <div className="flex flex-col min-h-screen bg-slate-50 text-slate-900 selection:bg-sky-200 selection:text-sky-900">
+    <div className="flex flex-col min-h-screen bg-slate-950 text-white selection:bg-sky-400 selection:text-slate-950">
       {/* 1. Hero Section with Large Slogan & 2 Big CTAs */}
       <HeroSection />
 

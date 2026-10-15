@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import {
@@ -11,12 +12,18 @@ import {
   Octagon,
   Search,
   PhoneForwarded,
-  ShieldAlert,
+  Info,
+  PhoneCall,
+  Flame,
+  CheckCircle2,
 } from "lucide-react";
 
 export function HeroSection() {
   const { user, openAuthModal } = useAuth();
   const router = useRouter();
+
+  // Active Hotspot on Phone Mockup
+  const [activeHotspot, setActiveHotspot] = useState<number>(1);
 
   const handleStartTraining = () => {
     if (!user) {
@@ -26,124 +33,205 @@ export function HeroSection() {
     }
   };
 
-  return (
-    <section className="relative overflow-hidden bg-gradient-to-b from-sky-50/50 via-slate-50/50 to-white border-b border-slate-200/80 py-16 sm:py-24 px-4 sm:px-6 lg:px-8">
-      {/* Subtle ambient light */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-96 bg-gradient-to-tr from-sky-100/40 via-indigo-50/30 to-transparent blur-3xl pointer-events-none -z-10" />
+  const hotspots = [
+    {
+      id: 1,
+      title: "Mạo danh số gọi",
+      badge: "Hotspot 1",
+      detail: "Số điện thoại lạ mạo danh Viện kiểm sát / Công an. Cơ quan điều tra không bao giờ làm việc qua điện thoại.",
+      color: "bg-rose-500",
+    },
+    {
+      id: 2,
+      title: "Áp lực thời gian",
+      badge: "Hotspot 2",
+      detail: "Ép buộc xử lý trong 30 phút - chiêu trò thao túng tâm lý sợ hãi để nạn nhân không kịp hỏi ý kiến người thân.",
+      color: "bg-amber-500",
+    },
+    {
+      id: 3,
+      title: "Đòi chuyển tiền",
+      badge: "Hotspot 3",
+      detail: "Yêu cầu chuyển 50 triệu vào 'Tài khoản tạm giữ'. Pháp luật Việt Nam KHÔNG CÓ tài khoản tạm giữ qua chuyển khoản cá nhân.",
+      color: "bg-rose-600",
+    },
+  ];
 
-      <div className="max-w-7xl mx-auto space-y-16">
+  return (
+    <section className="relative overflow-hidden bg-gradient-to-b from-slate-950 via-sky-950 to-slate-900 text-white border-b border-sky-900/50 py-16 sm:py-24 px-4 sm:px-6 lg:px-8">
+      {/* Tech Grid Background Accent */}
+      <div className="absolute inset-0 bg-[radial-gradient(#38bdf8_1px,transparent_1px)] [background-size:24px_24px] opacity-15 pointer-events-none" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-96 bg-gradient-to-tr from-sky-600/20 via-indigo-600/20 to-transparent blur-3xl pointer-events-none -z-10" />
+
+      <div className="max-w-7xl mx-auto space-y-16 relative z-10">
         {/* Main Grid: Value Proposition + Realistic Simulation Card */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
           {/* Left Column: Heading & CTAs */}
           <div className="lg:col-span-7 space-y-6 text-center lg:text-left">
-            {/* Project Research Badge */}
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-slate-200 shadow-xs text-xs sm:text-sm font-semibold text-slate-800">
-              <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span>Sáng Kiến Giáo Dục An Toàn Số • Cuộc Thi Khoa Học Kỹ Thuật</span>
-            </div>
-
-            {/* Main Headline - Theo bản góp ý PDF 1 */}
+            {/* Main Headline (Đã xóa bỏ dòng chữ nhỏ theo yêu cầu) */}
             <div className="space-y-4">
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-slate-900 tracking-tight leading-[1.15]">
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-[1.18]">
                 Xây dựng phản xạ số,{" "}
-                <span className="bg-gradient-to-r from-sky-600 via-indigo-600 to-sky-700 bg-clip-text text-transparent">
+                <span className="bg-gradient-to-r from-sky-400 via-teal-300 to-indigo-300 bg-clip-text text-transparent">
                   nâng cao nhận thức, năng lực phòng ngừa
                 </span>{" "}
                 trên không gian mạng.
               </h1>
-              <p className="text-base sm:text-lg text-slate-600 font-normal leading-relaxed max-w-2xl mx-auto lg:mx-0">
+              <p className="text-base sm:text-lg text-slate-300 font-normal leading-relaxed max-w-2xl mx-auto lg:mx-0">
                 Nền tảng thực hành tình huống tương tác thực tế đầu tiên tại Việt Nam, mô phỏng 39 kịch bản đời thực giúp học sinh và người cao tuổi chủ động nhận diện bẫy thao túng tâm lý, giữ an toàn tài sản số.
               </p>
             </div>
 
             {/* CTAs - Bắt buộc đăng nhập mới được vào luyện tập */}
-            <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3.5 pt-2">
+            <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-2">
               <button
                 onClick={handleStartTraining}
-                className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-gradient-to-r from-sky-600 via-sky-500 to-indigo-600 hover:from-sky-700 hover:to-indigo-700 text-white font-black text-lg shadow-lg hover-lift flex items-center justify-center gap-2.5 cursor-pointer transition-all border-b-4 border-sky-800 active:border-b-0 active:translate-y-1"
+                className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-gradient-to-r from-sky-500 via-sky-600 to-indigo-600 hover:from-sky-400 hover:to-indigo-500 text-white font-black text-lg shadow-xl hover-lift flex items-center justify-center gap-2.5 cursor-pointer transition-all border-b-4 border-sky-800 active:border-b-0 active:translate-y-1"
               >
                 <span>Vào Luyện Tập Ngay</span>
                 <ArrowRight className="w-5 h-5 text-sky-200" />
               </button>
+
+              <button
+                onClick={() => router.push("/about")}
+                className="w-full sm:w-auto px-6 py-4 rounded-2xl bg-slate-800/80 hover:bg-slate-700/80 text-slate-200 border border-slate-700 font-bold text-base shadow-sm hover-lift flex items-center justify-center gap-2 cursor-pointer transition-all"
+              >
+                <span>Tìm Hiểu Dự Án</span>
+              </button>
             </div>
 
             {/* Trust Assurance */}
-            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 text-xs text-slate-500 pt-3">
+            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 text-xs text-slate-400 pt-3">
               <span className="flex items-center gap-1.5 font-medium">
-                <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                <ShieldCheck className="w-4 h-4 text-emerald-400" />
                 100% Miễn phí & Không yêu cầu mật khẩu ngân hàng
               </span>
-              <span className="hidden sm:inline text-slate-300">•</span>
+              <span className="hidden sm:inline text-slate-600">•</span>
               <span className="flex items-center gap-1.5 font-medium">
-                <Lock className="w-4 h-4 text-sky-600" />
+                <Lock className="w-4 h-4 text-sky-400" />
                 Bảo mật dữ liệu học tập cá nhân
               </span>
             </div>
           </div>
 
-          {/* Right Column: Realistic High-Fidelity Simulation Card */}
+          {/* Right Column: Realistic Phone Mockup with Visual Illustration & Hotspot Pins */}
           <div className="lg:col-span-5">
-            <div className="relative mx-auto max-w-md rounded-3xl bg-white border border-slate-200/90 shadow-xl overflow-hidden">
+            <div className="relative mx-auto max-w-md rounded-3xl bg-slate-900 border-2 border-sky-500/30 shadow-2xl overflow-hidden backdrop-blur-xl">
               {/* Phone Status Bar */}
-              <div className="bg-slate-900 text-white px-5 py-2.5 flex items-center justify-between text-[11px] font-mono">
+              <div className="bg-slate-950 text-white px-5 py-2.5 flex items-center justify-between text-[11px] font-mono border-b border-slate-800">
                 <span>09:41</span>
-                <div className="flex items-center gap-2 text-slate-300">
+                <div className="flex items-center gap-2 text-slate-400">
                   <span>5G</span>
                   <span>100%</span>
                 </div>
               </div>
 
               {/* Message Header */}
-              <div className="px-5 py-3.5 border-b border-slate-100 bg-slate-50/80 flex items-center justify-between">
+              <div className="px-5 py-3 border-b border-slate-800 bg-slate-900/90 flex items-center justify-between">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-full bg-rose-100 text-rose-700 flex items-center justify-center font-bold text-xs">
-                    !
+                  <div className="w-8 h-8 rounded-full bg-rose-500/20 text-rose-400 border border-rose-500/40 flex items-center justify-center font-bold text-xs animate-pulse">
+                    <PhoneCall className="w-4 h-4" />
                   </div>
                   <div>
-                    <div className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
-                      <span>CẢNH BÁO: Cuộc gọi / SMS lạ</span>
+                    <div className="text-xs font-bold text-white flex items-center gap-1.5">
+                      <span>CẢNH BÁO: Cuộc gọi mạo danh</span>
                     </div>
-                    <div className="text-[10px] text-slate-500">Mạo danh cơ quan chức năng</div>
+                    <div className="text-[10px] text-slate-400">Số máy lạ • Giả danh cơ quan điều tra</div>
                   </div>
                 </div>
-                <span className="font-mono text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200">
+                <span className="font-mono text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-400 border border-rose-500/40">
                   Rủi ro cao
                 </span>
               </div>
 
-              {/* Message Body Simulation */}
-              <div className="p-5 space-y-4">
-                <div className="p-3.5 rounded-2xl bg-slate-100/80 border border-slate-200/80 text-xs sm:text-sm text-slate-800 leading-relaxed font-medium">
-                  &ldquo;LỆNH BẮT TẠM GIAM: Số CCCD của ông/bà liên quan đường dây rửa tiền xuyên quốc gia. Yêu cầu chuyển 50.000.000đ vào tài khoản tạm giữ Tòa án để thanh tra trong 30 phút...&rdquo;
+              {/* Visual Illustration & Interactive Hotspots */}
+              <div className="p-5 space-y-4 bg-slate-900/60">
+                {/* Illustration with Hotspot Pins Overlay */}
+                <div className="relative rounded-2xl overflow-hidden bg-slate-950 border border-slate-800 p-3 flex flex-col items-center">
+                  <div className="w-full h-36 relative flex items-center justify-center">
+                    <img
+                      src="/images/fake police.png"
+                      alt="Minh họa giả danh công an"
+                      className="w-full h-full object-contain filter drop-shadow-md"
+                    />
+
+                    {/* Hotspot Pin 1: Caller ID */}
+                    <button
+                      onClick={() => setActiveHotspot(1)}
+                      className={`absolute top-2 left-4 w-7 h-7 rounded-full flex items-center justify-center text-xs font-black shadow-lg transition-transform cursor-pointer ${
+                        activeHotspot === 1
+                          ? "bg-rose-500 text-white ring-4 ring-rose-400/50 scale-110"
+                          : "bg-slate-800 text-slate-300 border border-slate-600 hover:scale-105"
+                      }`}
+                      title="Bấm xem điểm bất thường 1"
+                    >
+                      1
+                    </button>
+
+                    {/* Hotspot Pin 2: Urgent 30 minutes */}
+                    <button
+                      onClick={() => setActiveHotspot(2)}
+                      className={`absolute top-1/2 right-4 -translate-y-1/2 w-7 h-7 rounded-full flex items-center justify-center text-xs font-black shadow-lg transition-transform cursor-pointer ${
+                        activeHotspot === 2
+                          ? "bg-amber-500 text-white ring-4 ring-amber-400/50 scale-110"
+                          : "bg-slate-800 text-slate-300 border border-slate-600 hover:scale-105"
+                      }`}
+                      title="Bấm xem điểm bất thường 2"
+                    >
+                      2
+                    </button>
+
+                    {/* Hotspot Pin 3: Bank transfer request */}
+                    <button
+                      onClick={() => setActiveHotspot(3)}
+                      className={`absolute bottom-2 left-6 w-7 h-7 rounded-full flex items-center justify-center text-xs font-black shadow-lg transition-transform cursor-pointer ${
+                        activeHotspot === 3
+                          ? "bg-rose-600 text-white ring-4 ring-rose-500/50 scale-110"
+                          : "bg-slate-800 text-slate-300 border border-slate-600 hover:scale-105"
+                      }`}
+                      title="Bấm xem điểm bất thường 3"
+                    >
+                      3
+                    </button>
+                  </div>
+
+                  {/* Hotspots Bar */}
+                  <div className="w-full flex items-center justify-around gap-2 pt-2 border-t border-slate-800 text-[11px] font-bold">
+                    {hotspots.map((h) => (
+                      <button
+                        key={h.id}
+                        onClick={() => setActiveHotspot(h.id)}
+                        className={`px-2 py-1 rounded-lg transition-all cursor-pointer flex items-center gap-1 ${
+                          activeHotspot === h.id
+                            ? "bg-sky-500 text-white shadow-xs"
+                            : "bg-slate-800 text-slate-400 hover:text-white"
+                        }`}
+                      >
+                        <span className="w-4 h-4 rounded-full bg-black/30 flex items-center justify-center text-[10px]">
+                          {h.id}
+                        </span>
+                        <span>{h.title}</span>
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
-                {/* 3 Red Flag Inspection Points */}
-                <div className="space-y-2">
-                  <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                    Bóc tách dấu hiệu lừa đảo:
+                {/* Dynamic Explanation Card Based on Active Hotspot */}
+                <div className="p-3.5 rounded-2xl bg-slate-800/90 border border-sky-500/30 text-xs text-slate-200 space-y-1.5 transition-all">
+                  <div className="flex items-center gap-1.5 text-sky-400 font-black uppercase text-[11px] tracking-wider">
+                    <Info className="w-4 h-4" />
+                    <span>Bóc tách bẫy lừa đảo (Điểm #{activeHotspot}):</span>
                   </div>
-
-                  <div className="p-2.5 rounded-xl bg-rose-50/70 border border-rose-100 text-xs text-rose-950 flex items-start gap-2">
-                    <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
-                    <span><strong>Thao túng sợ hãi:</strong> Tạo áp lực thời gian (30 phút) để nạn nhân hoảng loạn.</span>
-                  </div>
-
-                  <div className="p-2.5 rounded-xl bg-amber-50/70 border border-amber-100 text-xs text-amber-950 flex items-start gap-2">
-                    <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-                    <span><strong>Sai quy định pháp luật:</strong> Cơ quan điều tra KHÔNG BAO GIỜ yêu cầu chuyển tiền qua điện thoại.</span>
-                  </div>
-
-                  <div className="p-2.5 rounded-xl bg-emerald-50/70 border border-emerald-100 text-xs text-emerald-950 flex items-start gap-2">
-                    <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                    <span><strong>Phản xạ an toàn:</strong> Cúp máy ngay ➔ Gọi hỏi người thân hoặc đến trụ sở Công an.</span>
-                  </div>
+                  <p className="leading-relaxed text-slate-300 font-medium">
+                    {hotspots.find((h) => h.id === activeHotspot)?.detail}
+                  </p>
                 </div>
 
                 {/* Accuracy Stat Footer */}
-                <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px]">
-                  <span className="text-slate-500 font-medium">Hiệu quả rèn luyện:</span>
-                  <span className="font-bold text-emerald-700 flex items-center gap-1">
-                    <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
+                <div className="pt-2 border-t border-slate-800 flex items-center justify-between text-[11px] text-slate-400">
+                  <span className="font-medium">Hiệu quả rèn luyện:</span>
+                  <span className="font-bold text-emerald-400 flex items-center gap-1">
+                    <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
                     94.8% người học nhận diện đúng
                   </span>
                 </div>
@@ -152,94 +240,94 @@ export function HeroSection() {
           </div>
         </div>
 
-        {/* 4-Step Core Response Framework - SmartArt / Flowchart Thiết kế to rõ ràng, có mũi tên liên kết */}
-        <div className="p-6 sm:p-10 rounded-3xl bg-white border-2 border-slate-300 shadow-md space-y-8">
+        {/* 4-Step Core Response Framework - Sơ Đồ Khối (Flowchart) / SmartArt To Rõ Ràng (Size Up) */}
+        <div className="p-8 sm:p-12 rounded-3xl bg-slate-900/90 border-2 border-sky-500/30 shadow-2xl backdrop-blur-xl space-y-8">
           <div className="text-center max-w-2xl mx-auto space-y-2">
-            <span className="text-xs uppercase font-black text-sky-700 tracking-widest px-3 py-1 bg-sky-50 rounded-full border border-sky-200">
+            <span className="text-xs uppercase font-black text-sky-400 tracking-widest px-3.5 py-1 bg-sky-950/80 rounded-full border border-sky-500/40">
               QUY TRÌNH ỨNG PHÓ CHUẨN QUỐC GIA
             </span>
-            <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+            <h2 className="text-2xl sm:text-4xl font-black text-white tracking-tight">
               4 Bước Phản Xạ An Toàn Số Cho Mọi Tình Huống
             </h2>
-            <p className="text-sm text-slate-600 font-medium">
-              Ghi nhớ quy tắc phản xạ 4 bước trước khi thực hiện bất kỳ thao tác hay giao dịch nào
+            <p className="text-sm sm:text-base text-slate-300 font-medium">
+              Ghi nhớ quy tắc liên kết 4 bước theo trình tự trước khi thực hiện bất kỳ thao tác hay giao dịch nào
             </p>
           </div>
 
-          {/* Flowchart Diagram */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 relative">
+          {/* Sơ đồ khối SmartArt có mũi tên liên kết từ trái sang phải */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 sm:gap-6 relative">
             {/* Step 1 */}
-            <div className="relative p-5 rounded-2xl bg-rose-50/80 border-2 border-rose-300 shadow-xs flex flex-col justify-between gap-3 group hover:border-rose-400 transition-all">
+            <div className="relative p-6 rounded-2xl bg-gradient-to-b from-rose-950/60 to-slate-900 border-2 border-rose-500/50 shadow-lg flex flex-col justify-between gap-4 group hover:border-rose-400 transition-all">
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <span className="font-mono text-xs font-black px-2.5 py-1 rounded-lg bg-rose-600 text-white shadow-2xs">
+                  <span className="font-mono text-xs font-black px-3 py-1 rounded-lg bg-rose-600 text-white shadow-xs">
                     Bước 01
                   </span>
-                  <Octagon className="w-6 h-6 text-rose-600" />
+                  <Octagon className="w-7 h-7 text-rose-400" />
                 </div>
-                <h3 className="font-black text-slate-900 text-lg sm:text-xl mb-1">DỪNG LẠI</h3>
-                <p className="text-xs sm:text-sm text-slate-700 font-medium leading-relaxed">
-                  Không bấm vào link, không chuyển tiền, không đọc mã OTP khi đang bị hối thúc.
+                <h3 className="font-black text-white text-xl sm:text-2xl mb-1.5">DỪNG LẠI</h3>
+                <p className="text-xs sm:text-sm text-slate-300 font-medium leading-relaxed">
+                  Không bấm vào link lạ, không chuyển tiền, không đọc mã OTP khi đang bị hối thúc.
                 </p>
               </div>
-              <div className="text-[11px] font-bold text-rose-800 bg-rose-100/80 p-2 rounded-xl">
+              <div className="text-xs font-bold text-rose-300 bg-rose-950/80 border border-rose-800/60 p-2.5 rounded-xl text-center">
                 🛑 Bình tĩnh 30 giây
               </div>
             </div>
 
             {/* Step 2 */}
-            <div className="relative p-5 rounded-2xl bg-amber-50/80 border-2 border-amber-300 shadow-xs flex flex-col justify-between gap-3 group hover:border-amber-400 transition-all">
+            <div className="relative p-6 rounded-2xl bg-gradient-to-b from-amber-950/60 to-slate-900 border-2 border-amber-500/50 shadow-lg flex flex-col justify-between gap-4 group hover:border-amber-400 transition-all">
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <span className="font-mono text-xs font-black px-2.5 py-1 rounded-lg bg-amber-600 text-white shadow-2xs">
+                  <span className="font-mono text-xs font-black px-3 py-1 rounded-lg bg-amber-600 text-white shadow-xs">
                     Bước 02
                   </span>
-                  <Search className="w-6 h-6 text-amber-600" />
+                  <Search className="w-7 h-7 text-amber-400" />
                 </div>
-                <h3 className="font-black text-slate-900 text-lg sm:text-xl mb-1">KIỂM TRA</h3>
-                <p className="text-xs sm:text-sm text-slate-700 font-medium leading-relaxed">
+                <h3 className="font-black text-white text-xl sm:text-2xl mb-1.5">KIỂM TRA</h3>
+                <p className="text-xs sm:text-sm text-slate-300 font-medium leading-relaxed">
                   Soi kỹ tên miền (.gov.vn, .com.vn), tệp đính kèm (.apk) và số điện thoại người gọi.
                 </p>
               </div>
-              <div className="text-[11px] font-bold text-amber-800 bg-amber-100/80 p-2 rounded-xl">
+              <div className="text-xs font-bold text-amber-300 bg-amber-950/80 border border-amber-800/60 p-2.5 rounded-xl text-center">
                 🔍 Soi kỹ chi tiết lạ
               </div>
             </div>
 
             {/* Step 3 */}
-            <div className="relative p-5 rounded-2xl bg-sky-50/80 border-2 border-sky-300 shadow-xs flex flex-col justify-between gap-3 group hover:border-sky-400 transition-all">
+            <div className="relative p-6 rounded-2xl bg-gradient-to-b from-sky-950/60 to-slate-900 border-2 border-sky-500/50 shadow-lg flex flex-col justify-between gap-4 group hover:border-sky-400 transition-all">
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <span className="font-mono text-xs font-black px-2.5 py-1 rounded-lg bg-sky-600 text-white shadow-2xs">
+                  <span className="font-mono text-xs font-black px-3 py-1 rounded-lg bg-sky-600 text-white shadow-xs">
                     Bước 03
                   </span>
-                  <PhoneForwarded className="w-6 h-6 text-sky-600" />
+                  <PhoneForwarded className="w-7 h-7 text-sky-400" />
                 </div>
-                <h3 className="font-black text-slate-900 text-lg sm:text-xl mb-1">XÁC MINH</h3>
-                <p className="text-xs sm:text-sm text-slate-700 font-medium leading-relaxed">
+                <h3 className="font-black text-white text-xl sm:text-2xl mb-1.5">XÁC MINH</h3>
+                <p className="text-xs sm:text-sm text-slate-300 font-medium leading-relaxed">
                   Gọi điện thoại thông thường cho người thân hoặc liên hệ số hotline chính thức.
                 </p>
               </div>
-              <div className="text-[11px] font-bold text-sky-800 bg-sky-100/80 p-2 rounded-xl">
+              <div className="text-xs font-bold text-sky-300 bg-sky-950/80 border border-sky-800/60 p-2.5 rounded-xl text-center">
                 📞 Kênh độc lập
               </div>
             </div>
 
             {/* Step 4 */}
-            <div className="relative p-5 rounded-2xl bg-emerald-50/80 border-2 border-emerald-300 shadow-xs flex flex-col justify-between gap-3 group hover:border-emerald-400 transition-all">
+            <div className="relative p-6 rounded-2xl bg-gradient-to-b from-emerald-950/60 to-slate-900 border-2 border-emerald-500/50 shadow-lg flex flex-col justify-between gap-4 group hover:border-emerald-400 transition-all">
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <span className="font-mono text-xs font-black px-2.5 py-1 rounded-lg bg-emerald-600 text-white shadow-2xs">
+                  <span className="font-mono text-xs font-black px-3 py-1 rounded-lg bg-emerald-600 text-white shadow-xs">
                     Bước 04
                   </span>
-                  <ShieldCheck className="w-6 h-6 text-emerald-600" />
+                  <ShieldCheck className="w-7 h-7 text-emerald-400" />
                 </div>
-                <h3 className="font-black text-slate-900 text-lg sm:text-xl mb-1">HÀNH ĐỘNG</h3>
-                <p className="text-xs sm:text-sm text-slate-700 font-medium leading-relaxed">
+                <h3 className="font-black text-white text-xl sm:text-2xl mb-1.5">HÀNH ĐỘNG</h3>
+                <p className="text-xs sm:text-sm text-slate-300 font-medium leading-relaxed">
                   Chỉ thực hiện giao dịch khi đã xác thực 100% người nhận là đúng sự thật.
                 </p>
               </div>
-              <div className="text-[11px] font-bold text-emerald-800 bg-emerald-100/80 p-2 rounded-xl">
+              <div className="text-xs font-bold text-emerald-300 bg-emerald-950/80 border border-emerald-800/60 p-2.5 rounded-xl text-center">
                 🛡️ An toàn tài sản số
               </div>
             </div>
