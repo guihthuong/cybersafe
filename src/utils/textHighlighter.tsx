@@ -78,30 +78,12 @@ export function HighlightKeywords({ text }: { text: string }): React.ReactElemen
     <span>
       {parts.map((part, i) => {
         const lower = part.toLowerCase();
-
-        // Kiểm tra nếu là từ khóa nguy cơ
-        const isRedFlag = RED_FLAG_KEYWORDS.some((k) => k.toLowerCase() === lower);
-        if (isRedFlag) {
+        const isMatch = allKeywords.some((k) => k.toLowerCase() === lower);
+        if (isMatch) {
           return (
-            <mark
-              key={i}
-              className="bg-rose-100 text-rose-900 font-black px-1.5 py-0.5 rounded-md border border-rose-300 not-italic mx-0.5"
-            >
+            <strong key={i} className="font-bold text-slate-900">
               {part}
-            </mark>
-          );
-        }
-
-        // Kiểm tra nếu là từ khóa an toàn
-        const isSafe = SAFE_KEYWORDS.some((k) => k.toLowerCase() === lower);
-        if (isSafe) {
-          return (
-            <mark
-              key={i}
-              className="bg-emerald-100 text-emerald-950 font-black px-1.5 py-0.5 rounded-md border border-emerald-300 not-italic mx-0.5"
-            >
-              {part}
-            </mark>
+            </strong>
           );
         }
 
