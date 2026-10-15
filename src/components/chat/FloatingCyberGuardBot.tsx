@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { usePathname } from "next/navigation";
-import { useAuth } from "@/context/AuthContext";
 import { analyzeRisk } from "@/utils/riskAnalyzer";
 import { RiskAnalysisResult } from "@/types/scenario";
 import { RiskAnalysisCard } from "@/components/chat/RiskAnalysisCard";
@@ -19,7 +18,6 @@ import {
 
 export function FloatingCyberGuardBot() {
   const pathname = usePathname();
-  const { user, openAuthModal } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -44,21 +42,12 @@ export function FloatingCyberGuardBot() {
   }
 
   const handleToggle = () => {
-    if (!isOpen && !user) {
-      openAuthModal("signin");
-      return;
-    }
     setIsOpen(!isOpen);
   };
 
   const handleSend = async (customText?: string) => {
     const textToSend = customText || input;
     if (!textToSend.trim() || isAnalyzing) return;
-
-    if (!user) {
-      openAuthModal("signin");
-      return;
-    }
 
     const userMsg = {
       sender: "user" as const,
