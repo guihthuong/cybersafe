@@ -58,11 +58,27 @@ export function EducationalFeedbackModal({
     setShowFullDetails(false);
   }, [isOpen, passedSafely]);
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isOpen) {
+        onClose();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-slate-900/60 backdrop-blur-md overflow-y-auto">
-      <div className="relative w-full max-w-lg rounded-3xl bg-white border-2 border-slate-300 shadow-2xl p-5 sm:p-6 my-auto text-slate-900 flex flex-col gap-4">
+    <div
+      onClick={onClose}
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-slate-900/60 backdrop-blur-md overflow-y-auto cursor-pointer"
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="relative w-full max-w-lg rounded-3xl bg-white border-2 border-slate-300 shadow-2xl p-5 sm:p-6 my-auto text-slate-900 flex flex-col gap-4 cursor-default"
+      >
         
         {/* THANH TIÊU ĐỀ: TRẠNG THÁI RÕ RÀNG + NÚT CỠ CHỮ + NÚT ĐÓNG */}
         <div className="flex items-center justify-between pb-3 border-b border-slate-200">

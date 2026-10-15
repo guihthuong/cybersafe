@@ -7,7 +7,7 @@ import { HotspotQuestion } from "@/components/game/HotspotQuestion";
 import { MultipleChoiceQuestion } from "@/components/game/MultipleChoiceQuestion";
 import { EducationalFeedbackModal } from "@/components/game/EducationalFeedbackModal";
 import { X, ArrowLeft, Shield, Award } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface PuzzleLevelModalProps {
   scenario: Scenario;
@@ -69,9 +69,25 @@ export function PuzzleLevelModal({
     setQuestionAttemptKey((prev) => prev + 1);
   };
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isOpen && !modalFeedbackState.isOpen) {
+        onClose();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, modalFeedbackState.isOpen, onClose]);
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-900/60 backdrop-blur-md overflow-y-auto">
-      <div className="relative w-full max-w-5xl rounded-3xl bg-slate-50 border-2 border-slate-300 shadow-2xl p-4 sm:p-6 my-2 flex flex-col gap-4 max-h-[95vh] overflow-y-auto">
+    <div
+      onClick={onClose}
+      className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-900/60 backdrop-blur-md overflow-y-auto cursor-pointer"
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="relative w-full max-w-5xl rounded-3xl bg-slate-50 border-2 border-slate-300 shadow-2xl p-4 sm:p-6 my-2 flex flex-col gap-4 max-h-[95vh] overflow-y-auto cursor-default"
+      >
         {/* Top Header Bar - STICKY TOP */}
         <div className="sticky -top-4 sm:-top-6 -mt-2 -mx-4 sm:-mx-6 px-4 sm:px-6 pt-3 pb-3 bg-slate-50/95 backdrop-blur-md border-b border-slate-200 z-40 flex items-center justify-between gap-3 shadow-2xs">
           <div className="flex items-center gap-3">

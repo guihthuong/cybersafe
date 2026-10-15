@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { analyzeRisk } from "@/utils/riskAnalyzer";
 import { RiskAnalysisResult } from "@/types/scenario";
@@ -21,6 +21,42 @@ export function FloatingCyberGuardBot() {
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const chatRef = useRef<HTMLDivElement>(null);
+  const triggerButtonRef = useRef<HTMLButtonElement>(null);
+
+  // Đóng chatbot khi click chuột ra ngoài hoặc ấn phím Escape
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
+      const target = event.target as Node;
+      if (
+        chatRef.current &&
+        !chatRef.current.contains(target) &&
+        triggerButtonRef.current &&
+        !triggerButtonRef.current.contains(target)
+      ) {
+        setIsOpen(false);
+      }
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("touchstart", handleClickOutside);
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isOpen]);
+
   const [conversation, setConversation] = useState<
     {
       sender: "user" | "bot";
@@ -97,6 +133,7 @@ export function FloatingCyberGuardBot() {
         )}
 
         <button
+          ref={triggerButtonRef}
           onClick={handleToggle}
           className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-sky-600 to-indigo-600 hover:from-sky-700 hover:to-indigo-700 text-white shadow-xl hover:scale-105 active:scale-95 transition-all flex items-center justify-center cursor-pointer border-2 border-white"
           title="Mở trợ lý AI CyberGuardBot"
@@ -107,7 +144,10 @@ export function FloatingCyberGuardBot() {
 
       {/* Floating Chat Window */}
       {isOpen && (
-        <div className="fixed bottom-24 right-4 sm:right-6 z-50 w-[calc(100vw-2rem)] sm:w-[460px] md:w-[490px] max-h-[85vh] h-[620px] bg-white rounded-3xl border-2 border-slate-300 shadow-2xl flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-6 duration-200">
+        <div
+          ref={chatRef}
+          className="fixed bottom-24 right-4 sm:right-6 z-50 w-[calc(100vw-2rem)] sm:w-[460px] md:w-[490px] max-h-[85vh] h-[620px] bg-white rounded-3xl border-2 border-slate-300 shadow-2xl flex flex-col overflow-hidden animate-in fade-in slide-in-from-bottom-6 duration-200"
+        >
           {/* Header */}
           <div className="p-3.5 sm:p-4 bg-gradient-to-r from-sky-600 to-indigo-600 text-white flex items-center justify-between shadow-xs">
             <div className="flex items-center gap-2.5">
