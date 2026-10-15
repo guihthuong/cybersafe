@@ -30,9 +30,15 @@ import {
   Flag,
   Compass,
   Award,
+  AlertTriangle,
+  Lightbulb,
 } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
+import { PreTestModal } from "@/components/auth/PreTestModal";
+import { WeeklyLeaderboard } from "@/components/game/WeeklyLeaderboard";
 
 export default function PlayPage() {
+  const { user, profile: authProfile, openAuthModal, recordPreTestResult } = useAuth();
   const { scenarios, supabaseStatus, refreshData } = useScenarios();
 
   // Toàn bộ ngân hàng 39 câu hỏi: ưu tiên từ Supabase Cloud nếu có
@@ -68,6 +74,13 @@ export default function PlayPage() {
   const [isDbModalOpen, setIsDbModalOpen] = useState(false);
   const [seedLoading, setSeedLoading] = useState(false);
   const [seedStatusMessage, setSeedStatusMessage] = useState<string | null>(null);
+
+  // Kiểm tra xem người dùng đã hoàn thành bài khảo sát đầu vào Pre-Test chưa
+  const isPretestDone = Boolean(
+    authProfile?.pretest_completed ||
+    (typeof window !== "undefined" && user?.id && localStorage.getItem(`cybersafe_pretest_done_${user.id}`) === "true")
+  );
+  const [showPreTestModal, setShowPreTestModal] = useState<boolean>(!isPretestDone);
 
   const handleSeedDatabase = async () => {
     setSeedLoading(true);
@@ -128,8 +141,75 @@ export default function PlayPage() {
     return s.category === selectedCategoryFilter;
   });
 
+  const handlePreTestComplete = async (
+    score: number,
+    details: { competencyLevel: string; needsImprovement: string[] }
+  ) => {
+    setShowPreTestModal(false);
+    await recordPreTestResult(score, details);
+  };
+
+  // 1. Kiểm tra trạng thái đăng nhập bắt buộc theo yêu cầu đề tài
+  if (!user) {
+    return (
+      <div className="min-h-[80vh] bg-slate-50 flex items-center justify-center p-4">
+        <div className="max-w-md w-full p-8 rounded-3xl bg-white border-2 border-slate-200 shadow-xl text-center space-y-6">
+          <div className="w-16 h-16 rounded-2xl bg-blue-100 text-blue-700 mx-auto flex items-center justify-center shadow-inner">
+            <Lock className="w-8 h-8" />
+          </div>
+
+          <div className="space-y-2">
+            <span className="text-xs uppercase font-bold tracking-wider text-blue-600 font-mono">
+              Bắt Buộc Đăng Nhập
+            </span>
+            <h2 className="text-2xl font-black text-slate-900 tracking-tight">
+              Khu Vực 39 Ải Thử Thách
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-600 font-medium leading-relaxed">
+              Theo quy định của hệ thống, bạn cần đăng nhập tài khoản bằng SĐT hoặc Email để làm các câu hỏi chính thức, đo lường năng lực và tích lũy huy hiệu.
+            </p>
+          </div>
+
+          <div className="space-y-3 pt-2">
+            <button
+              onClick={() => openAuthModal("signin")}
+              className="w-full py-3.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-black text-sm shadow-md transition-all cursor-pointer flex items-center justify-center gap-2"
+            >
+              <Lock className="w-4 h-4" />
+              <span>Đăng Nhập Ngay</span>
+            </button>
+
+            <button
+              onClick={() => openAuthModal("signup")}
+              className="w-full py-3 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs transition-all cursor-pointer"
+            >
+              Chưa có tài khoản? Đăng ký bằng SĐT / Email
+            </button>
+
+            <div className="pt-2 border-t border-slate-100">
+              <Link
+                href="/#demo-quiz"
+                className="text-xs text-blue-600 hover:text-blue-800 underline font-semibold inline-flex items-center gap-1"
+              >
+                <span>Trải nghiệm 2 câu hỏi Demo ở Trang chủ</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 py-8 px-4 sm:px-6 lg:px-8">
+      {/* Pre-Test Modal xuất hiện ở lần đăng nhập đầu tiên */}
+      <PreTestModal
+        isOpen={showPreTestModal}
+        onComplete={handlePreTestComplete}
+        userDisplayName={authProfile?.display_name || user.email || "Học Viên"}
+      />
+
       <div className="max-w-6xl mx-auto space-y-8">
         {/* 1. PERSONALIZED PLAYER PROFILE & STATUS BAR */}
         <PlayerHeaderBar
@@ -151,6 +231,31 @@ export default function PlayPage() {
           onContinueActiveLevel={handleContinueActiveLevel}
           onOpenDatabaseInfo={() => setIsDbModalOpen(true)}
         />
+
+        {/* Diagnostic Insights: Nội dung cần cải thiện khi người dùng đăng nhập */}
+        {authProfile?.needs_improvement && authProfile.needs_improvement.length > 0 && (
+          <div className="p-4 sm:p-5 rounded-2xl bg-amber-50/70 border border-amber-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2 text-xs font-bold text-amber-900 uppercase">
+                <AlertTriangle className="w-4 h-4 text-amber-600" />
+                <span>Nội dung cần tập trung cải thiện (Theo khảo sát đầu vào):</span>
+              </div>
+              <div className="flex flex-wrap gap-1.5 pt-1">
+                {authProfile.needs_improvement.map((topic, i) => (
+                  <span
+                    key={i}
+                    className="text-xs font-semibold px-2.5 py-1 rounded-lg bg-white border border-amber-300 text-amber-950"
+                  >
+                    {topic}
+                  </span>
+                ))}
+              </div>
+            </div>
+            <span className="text-[11px] font-bold text-amber-800 bg-amber-100 px-3 py-1 rounded-full shrink-0">
+              Điểm Pre-test: {authProfile.pretest_score ?? 0}/10
+            </span>
+          </div>
+        )}
 
         {/* 2. CHÍNH: HUB BẢN ĐỒ CÁC ĐỀ TÀI KHOA HỌC (THEO CHƯƠNG ROUTE RIÊNG) */}
         {viewMode === "map" ? (
@@ -435,6 +540,9 @@ export default function PlayPage() {
             hasNext={activeModalLevelIndex < allScenarios.length - 1}
           />
         )}
+
+        {/* 4. BẢNG XẾP HẠNG TOP 10 TUẦN / CHỦ ĐỀ & VINH DANH */}
+        <WeeklyLeaderboard />
 
         {/* 5. MODAL SUPABASE DATABASE STATUS & SYNC */}
         {isDbModalOpen && (

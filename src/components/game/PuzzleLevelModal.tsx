@@ -6,7 +6,7 @@ import { BranchingScenarioQuestion } from "@/components/game/BranchingScenarioQu
 import { HotspotQuestion } from "@/components/game/HotspotQuestion";
 import { MultipleChoiceQuestion } from "@/components/game/MultipleChoiceQuestion";
 import { EducationalFeedbackModal } from "@/components/game/EducationalFeedbackModal";
-import { X, ArrowLeft, Shield, Award } from "lucide-react";
+import { X, ArrowLeft, Shield, Award, Clock } from "lucide-react";
 import { useState, useEffect } from "react";
 
 interface PuzzleLevelModalProps {
@@ -42,10 +42,31 @@ export function PuzzleLevelModal({
 
   // Key để reset lại câu hỏi khi người dùng bấm Thử lại
   const [questionAttemptKey, setQuestionAttemptKey] = useState<number>(0);
+  // Đếm ngược thời gian làm bài (90 giây) theo wireframe
+  const [secondsLeft, setSecondsLeft] = useState<number>(90);
+
+  useEffect(() => {
+    if (!isOpen || modalFeedbackState.isOpen) return;
+    setSecondsLeft(90);
+    const interval = setInterval(() => {
+      setSecondsLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [isOpen, scenario.scenario_id, questionAttemptKey, modalFeedbackState.isOpen]);
 
   if (!isOpen) return null;
 
   const levelNum = levelIndex + 1;
+  const minutes = Math.floor(secondsLeft / 60);
+  const seconds = secondsLeft % 60;
+  const formattedTime = `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
 
   const handleFinishQuestion = (passedSafely: boolean, earnedScore: number) => {
     // Record to parent
@@ -114,13 +135,28 @@ export function PuzzleLevelModal({
             </div>
           </div>
 
-          <button
-            onClick={onClose}
-            className="p-1.5 rounded-xl bg-white hover:bg-slate-100 text-slate-500 hover:text-slate-900 transition-colors cursor-pointer border border-slate-200 shrink-0"
-            title="Đóng ải (Trở lại)"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          <div className="flex items-center gap-2">
+            {/* Countdown Timer Widget (Theo Wireframe) */}
+            <div
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border shadow-2xs font-mono font-black text-xs sm:text-sm ${
+                secondsLeft <= 15
+                  ? "bg-rose-50 border-rose-300 text-rose-700 animate-pulse"
+                  : "bg-white border-slate-300 text-slate-800"
+              }`}
+              title="Thời gian thực hiện câu hỏi"
+            >
+              <Clock className={`w-4 h-4 ${secondsLeft <= 15 ? "text-rose-600" : "text-amber-600"}`} />
+              <span>{formattedTime}</span>
+            </div>
+
+            <button
+              onClick={onClose}
+              className="p-1.5 rounded-xl bg-white hover:bg-slate-100 text-slate-500 hover:text-slate-900 transition-colors cursor-pointer border border-slate-200 shrink-0"
+              title="Đóng ải (Trở lại)"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
         </div>
 
         {/* Challenge Stage Grid */}

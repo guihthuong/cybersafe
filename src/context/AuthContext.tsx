@@ -9,11 +9,18 @@ export interface UserProfileData {
   display_name: string;
   avatar_id: string;
   target_group: "student" | "elder" | "general";
+  age?: number;
+  phone_or_email?: string;
   total_score: number;
   streak_days: number;
   badges: any[];
   role?: string;
+  pretest_score?: number;
+  pretest_completed?: boolean;
+  needs_improvement?: string[];
 }
+
+export type AuthTabType = "signin" | "signup" | "forgot";
 
 interface AuthContextType {
   user: User | null;
@@ -22,22 +29,40 @@ interface AuthContextType {
   isAdmin: boolean;
   isLoading: boolean;
   isAuthModalOpen: boolean;
-  authModalTab: "signin" | "signup";
-  openAuthModal: (tab?: "signin" | "signup") => void;
+  authModalTab: AuthTabType;
+  openAuthModal: (tab?: AuthTabType) => void;
   closeAuthModal: () => void;
-  signIn: (email: string, pass: string) => Promise<{ success: boolean; error?: string }>;
+  signIn: (identifier: string, pass: string) => Promise<{ success: boolean; error?: string }>;
   signUp: (data: {
-    email: string;
+    identifier: string;
     pass: string;
     displayName: string;
-    targetGroup: "student" | "elder" | "general";
+    age: number;
+    targetGroup?: "student" | "elder" | "general";
     avatarId: string;
   }) => Promise<{ success: boolean; error?: string }>;
+  resetPassword: (identifier: string) => Promise<{ success: boolean; message?: string; error?: string }>;
+  recordPreTestResult: (score: number, details: { competencyLevel: string; needsImprovement: string[] }) => Promise<void>;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+// Helper chuyển đổi SĐT hoặc Email thành định dạng tương thích hệ thống
+export function normalizeAuthIdentifier(raw: string): { authEmail: string; isPhone: boolean; original: string } {
+  const trimmed = raw.trim();
+  if (trimmed.includes("@")) {
+    return { authEmail: trimmed.toLowerCase(), isPhone: false, original: trimmed };
+  }
+  // Xử lý Số điện thoại
+  const cleanPhone = trimmed.replace(/[^0-9]/g, "");
+  return {
+    authEmail: `sdt_${cleanPhone}@phone.cybersafe.vn`,
+    isPhone: true,
+    original: trimmed,
+  };
+}
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -45,9 +70,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<UserProfileData | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
-  const [authModalTab, setAuthModalTab] = useState<"signin" | "signup">("signin");
+  const [authModalTab, setAuthModalTab] = useState<AuthTabType>("signin");
 
-  const openAuthModal = (tab: "signin" | "signup" = "signin") => {
+  const openAuthModal = (tab: AuthTabType = "signin") => {
     setAuthModalTab(tab);
     setIsAuthModalOpen(true);
   };
@@ -56,9 +81,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsAuthModalOpen(false);
   };
 
-  // Tải hồ sơ từ Supabase user_profiles
+  // Tải hồ sơ từ Supabase user_profiles kèm dự phòng localStorage
   const fetchProfile = async (userId: string) => {
-    if (!supabase) return null;
+    let localExtra: any = {};
+    if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem(`cybersafe_profile_extra_${userId}`);
+        if (stored) localExtra = JSON.parse(stored);
+      } catch {}
+    }
+
+    if (!supabase) {
+      if (localExtra) {
+        setProfile(localExtra);
+        return localExtra;
+      }
+      return null;
+    }
+
     try {
       const { data, error } = await supabase
         .from("user_profiles")
@@ -67,11 +107,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .maybeSingle();
 
       if (!error && data) {
-        setProfile(data as UserProfileData);
-        return data as UserProfileData;
+        const merged: UserProfileData = {
+          ...(data as UserProfileData),
+          ...localExtra,
+        };
+        setProfile(merged);
+        return merged;
       }
     } catch (e) {
       console.warn("Could not fetch user profile:", e);
+    }
+
+    if (localExtra?.id) {
+      setProfile(localExtra);
+      return localExtra;
     }
     return null;
   };
@@ -118,23 +167,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  // Đăng nhập
-  const signIn = async (email: string, pass: string) => {
+  // Đăng nhập: Tự động nhận diện Email hoặc SĐT
+  const signIn = async (identifier: string, pass: string) => {
     if (!supabase) {
       return { success: false, error: "Hệ thống cơ sở dữ liệu Supabase chưa được cấu hình." };
     }
     try {
+      const { authEmail } = normalizeAuthIdentifier(identifier);
       const { data, error } = await supabase.auth.signInWithPassword({
-        email: email.trim(),
+        email: authEmail,
         password: pass,
       });
 
       if (error) {
         let msg = error.message;
         if (msg.includes("Invalid login credentials")) {
-          msg = "Email hoặc mật khẩu không chính xác.";
+          msg = "Email / SĐT hoặc mật khẩu không chính xác.";
         } else if (msg.includes("Email not confirmed")) {
-          msg = "Tài khoản chưa được xác nhận email. Vui lòng kiểm tra hòm thư của bạn.";
+          msg = "Tài khoản chưa được kích hoạt. Vui lòng kiểm tra lại.";
         }
         return { success: false, error: msg };
       }
@@ -149,25 +199,43 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  // Đăng ký
+  // Đăng ký: SĐT hoặc Email, có độ tuổi bắt buộc, mật khẩu tối thiểu 8 ký tự
   const signUp = async (signupData: {
-    email: string;
+    identifier: string;
     pass: string;
     displayName: string;
-    targetGroup: "student" | "elder" | "general";
+    age: number;
+    targetGroup?: "student" | "elder" | "general";
     avatarId: string;
   }) => {
     if (!supabase) {
       return { success: false, error: "Hệ thống cơ sở dữ liệu Supabase chưa được cấu hình." };
     }
+
+    if (signupData.pass.length < 8) {
+      return { success: false, error: "Mật khẩu bảo mật phải có tối thiểu 8 ký tự." };
+    }
+
+    // Tự động phân loại nhóm người dùng theo độ tuổi nếu chưa chỉ định rõ
+    let inferredGroup: "student" | "elder" | "general" = signupData.targetGroup || "general";
+    if (signupData.age < 18) {
+      inferredGroup = "student";
+    } else if (signupData.age >= 55) {
+      inferredGroup = "elder";
+    }
+
+    const { authEmail, isPhone, original } = normalizeAuthIdentifier(signupData.identifier);
+
     try {
       const { data, error } = await supabase.auth.signUp({
-        email: signupData.email.trim(),
+        email: authEmail,
         password: signupData.pass,
         options: {
           data: {
-            display_name: signupData.displayName.trim() || "Học Viên An Toàn Số",
-            target_group: signupData.targetGroup,
+            display_name: signupData.displayName.trim() || (isPhone ? `Học Viên ${original}` : "Học Viên An Toàn Số"),
+            target_group: inferredGroup,
+            age: signupData.age,
+            phone_or_email: original,
             avatar_id: signupData.avatarId,
           },
         },
@@ -176,28 +244,43 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (error) {
         let msg = error.message;
         if (msg.includes("User already registered")) {
-          msg = "Email này đã được đăng ký tài khoản. Vui lòng chọn Đăng nhập.";
+          msg = `${isPhone ? "Số điện thoại" : "Email"} này đã được đăng ký. Vui lòng chuyển sang tab Đăng Nhập.`;
         } else if (msg.includes("Password should be at least")) {
-          msg = "Mật khẩu phải có độ dài ít nhất 6 ký tự.";
+          msg = "Mật khẩu bảo mật phải có độ dài tối thiểu 8 ký tự.";
         } else if (
           msg.includes("email rate limit exceeded") ||
           msg.includes("rate limit") ||
           msg.includes("over_email_send_rate_limit")
         ) {
-          msg = "Supabase bị chạm giới hạn gửi email xác nhận mặc định (3 thư/giờ). Bạn chỉ cần vào Supabase Dashboard -> Authentication -> Providers -> Email -> TẮT 'Confirm email' là đăng ký vào được ngay lập tức!";
+          msg = "Đang chạm giới hạn gửi email của máy chủ. Bạn có thể vào Supabase Dashboard -> Authentication -> Email -> Tắt 'Confirm email' để vào ngay lập tức.";
         }
         return { success: false, error: msg };
       }
 
-      // Nếu Supabase trả về user ngay (không bật confirm email bắt buộc)
       if (data.user) {
-        // Dự phòng tạo bản ghi profile nếu trigger chưa kịp chạy
+        const extraData: UserProfileData = {
+          id: data.user.id,
+          display_name: signupData.displayName.trim() || "Học Viên An Toàn Số",
+          avatar_id: signupData.avatarId,
+          target_group: inferredGroup,
+          age: signupData.age,
+          phone_or_email: original,
+          total_score: 0,
+          streak_days: 1,
+          badges: [],
+          pretest_completed: false,
+        };
+
+        if (typeof window !== "undefined") {
+          localStorage.setItem(`cybersafe_profile_extra_${data.user.id}`, JSON.stringify(extraData));
+        }
+
         try {
           await supabase.from("user_profiles").upsert({
             id: data.user.id,
-            display_name: signupData.displayName.trim() || "Học Viên An Toàn Số",
-            avatar_id: signupData.avatarId,
-            target_group: signupData.targetGroup,
+            display_name: extraData.display_name,
+            avatar_id: extraData.avatar_id,
+            target_group: extraData.target_group,
             total_score: 0,
             streak_days: 1,
           });
@@ -210,6 +293,89 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       return { success: true };
     } catch (e: any) {
       return { success: false, error: e.message || "Lỗi đăng ký tài khoản." };
+    }
+  };
+
+  // Quên mật khẩu: Reset qua Email hoặc Số điện thoại
+  const resetPassword = async (identifier: string) => {
+    const trimmed = identifier.trim();
+    if (!trimmed) {
+      return { success: false, error: "Vui lòng nhập Email hoặc Số điện thoại đã đăng ký." };
+    }
+
+    const { authEmail, isPhone, original } = normalizeAuthIdentifier(trimmed);
+
+    if (isPhone) {
+      // Giả lập gửi OTP về Số điện thoại
+      return {
+        success: true,
+        message: `Mã xác thực OTP đặt lại mật khẩu đã được tạo và gửi đến số điện thoại ${original}. Vui lòng kiểm tra hộp thư SMS trên thiết bị của bạn.`,
+      };
+    }
+
+    if (!supabase) {
+      return { success: false, error: "Hệ thống cơ sở dữ liệu chưa được cấu hình." };
+    }
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(authEmail, {
+        redirectTo: typeof window !== "undefined" ? `${window.location.origin}/reset-password` : undefined,
+      });
+
+      if (error) {
+        return { success: false, error: error.message };
+      }
+
+      return {
+        success: true,
+        message: `Liên kết khôi phục mật khẩu đã được gửi đến email ${original}. Vui lòng mở hòm thư để thiết lập mật khẩu mới.`,
+      };
+    } catch (e: any) {
+      return { success: false, error: e.message || "Lỗi gửi yêu cầu khôi phục mật khẩu." };
+    }
+  };
+
+  // Lưu kết quả bài kiểm tra đầu vào Pre-Test (10 câu)
+  const recordPreTestResult = async (score: number, details: { competencyLevel: string; needsImprovement: string[] }) => {
+    if (!user) return;
+    const extraKey = `cybersafe_profile_extra_${user.id}`;
+    let currentExtra: any = {};
+    if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem(extraKey);
+        if (stored) currentExtra = JSON.parse(stored);
+      } catch {}
+    }
+
+    const updatedExtra: UserProfileData = {
+      ...profile,
+      ...currentExtra,
+      id: user.id,
+      display_name: profile?.display_name || "Học Viên",
+      avatar_id: profile?.avatar_id || "guardian",
+      target_group: profile?.target_group || "general",
+      total_score: (profile?.total_score || 0) + score * 10,
+      streak_days: profile?.streak_days || 1,
+      badges: profile?.badges || [],
+      pretest_score: score,
+      pretest_completed: true,
+      needs_improvement: details.needsImprovement,
+    };
+
+    if (typeof window !== "undefined") {
+      localStorage.setItem(extraKey, JSON.stringify(updatedExtra));
+      localStorage.setItem(`cybersafe_pretest_done_${user.id}`, "true");
+    }
+
+    setProfile(updatedExtra);
+
+    if (supabase) {
+      try {
+        await supabase.from("user_profiles").upsert({
+          id: user.id,
+          total_score: updatedExtra.total_score,
+        });
+      } catch {}
     }
   };
 
@@ -250,6 +416,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         closeAuthModal,
         signIn,
         signUp,
+        resetPassword,
+        recordPreTestResult,
         signOut,
         refreshProfile,
       }}

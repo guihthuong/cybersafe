@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { usePathname } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 import { analyzeRisk } from "@/utils/riskAnalyzer";
 import { RiskAnalysisResult } from "@/types/scenario";
 import { RiskAnalysisCard } from "@/components/chat/RiskAnalysisCard";
@@ -11,13 +12,13 @@ import {
   Send,
   MessageSquare,
   ShieldCheck,
-  Sparkles,
   RotateCcw,
-  ExternalLink,
+  Loader2,
 } from "lucide-react";
 
 export function FloatingCyberGuardBot() {
   const pathname = usePathname();
+  const { user, openAuthModal } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -67,7 +68,7 @@ export function FloatingCyberGuardBot() {
   >([
     {
       sender: "bot",
-      text: "Xin chào bạn! Tôi là CyberGuardBot — Trợ lý AI chuyên hỗ trợ phân tích rủi ro và ra quyết định an toàn số. Bạn nhận được tin nhắn, cuộc gọi hoặc đường link đáng ngờ nào không? Hãy nhập vào đây để tôi kiểm tra ngay nhé!",
+      text: "Xin chào bạn. Tôi là CyberGuardBot, trợ lý AI chuyên về phát triển năng lực số, an toàn thông tin, phòng chống lừa đảo trực tuyến và hỗ trợ ra quyết định an toàn trên không gian mạng. Bạn nhận được tin nhắn, email, đường link hoặc tình huống đáng ngờ nào không? Vui lòng nhập nội dung để tôi phân tích giúp bạn.",
       time: "Vừa xong",
     },
   ]);
@@ -78,12 +79,38 @@ export function FloatingCyberGuardBot() {
   }
 
   const handleToggle = () => {
+    if (!user) {
+      openAuthModal("signin");
+      return;
+    }
     setIsOpen(!isOpen);
+  };
+
+  // Kiểm tra câu hỏi ngoài phạm vi an toàn số
+  const isOutOfScope = (query: string): boolean => {
+    const q = query.toLowerCase().trim();
+    const cyberKeywords = [
+      "lừa", "đảo", "link", "url", "otp", "mật khẩu", "tiền", "chuyển khoản",
+      "ngân hàng", "công an", "viện kiểm sát", "tòa án", "vneid", "apk", "tải",
+      "bắt", "cấp cứu", "tai nạn", "phishing", "web", "zalo", "telegram", "facebook",
+      "sms", "tin nhắn", "cuộc gọi", "sđt", "mã qr", "deepfake", "bảo mật",
+      "an toàn", "hack", "virus", "mã độc", "tài khoản", "shopee", "hoa hồng",
+      "cộng tác viên", "trúng thưởng", "quà", "đòi nợ", "đe dọa", "chiếm đoạt",
+    ];
+    // Nếu câu hỏi quá ngắn hoặc không chứa từ khóa an toàn mạng
+    const hasCyberTerm = cyberKeywords.some((k) => q.includes(k));
+    const isCommonUnrelated = /(nấu ăn|thời tiết|thơ|bài hát|toán học|lịch sử|bóng đá|xem phim|tỏ tình)/i.test(q);
+    return isCommonUnrelated || (!hasCyberTerm && q.length < 8);
   };
 
   const handleSend = async (customText?: string) => {
     const textToSend = customText || input;
     if (!textToSend.trim() || isAnalyzing) return;
+
+    if (!user) {
+      openAuthModal("signin");
+      return;
+    }
 
     const userMsg = {
       sender: "user" as const,
@@ -97,11 +124,23 @@ export function FloatingCyberGuardBot() {
 
     try {
       await new Promise((r) => setTimeout(r, 600));
+
+      // Kiểm tra câu hỏi ngoài phạm vi
+      if (isOutOfScope(textToSend)) {
+        const botMsg = {
+          sender: "bot" as const,
+          text: "Xin lỗi, tôi là CyberSafe, trợ lý hỗ trợ học phần Phát triển năng lực số và nhận diện, phòng tránh rủi ro trên không gian mạng. Câu hỏi này nằm ngoài phạm vi hỗ trợ. Vui lòng đặt câu hỏi liên quan đến an toàn số.",
+          time: new Date().toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" }),
+        };
+        setConversation((prev) => [...prev, botMsg]);
+        return;
+      }
+
       const result = await analyzeRisk(textToSend);
 
       const botMsg = {
         sender: "bot" as const,
-        text: `CyberGuardBot đã phân tích tình huống của bạn: Phát hiện mức độ rủi ro ${result.risk_level.toUpperCase()}. Dưới đây là bóc tách dấu hiệu và hướng dẫn xử lý khẩn cấp:`,
+        text: `CyberGuardBot đã phân tích tình huống của bạn. Dưới đây là đánh giá rủi ro, bóc tách dấu hiệu và hướng dẫn xử lý:`,
         analysis: result,
         time: new Date().toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" }),
       };
@@ -195,21 +234,21 @@ export function FloatingCyberGuardBot() {
           <div className="px-3 py-2 bg-slate-50 border-b border-slate-200 flex items-center gap-2 overflow-x-auto text-xs whitespace-nowrap scrollbar-thin">
             <button
               onClick={() => handleSend("Tin nhắn đòi tiền cấp cứu")}
-              className="px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:border-sky-300 hover:bg-sky-50 text-slate-700 font-semibold cursor-pointer shrink-0 transition-colors"
+              className="px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:border-blue-300 hover:bg-blue-50 text-slate-700 font-semibold cursor-pointer shrink-0 transition-colors"
             >
-              🚑 Đòi tiền cấp cứu
+              Đòi tiền cấp cứu
             </button>
             <button
               onClick={() => handleSend("Công an dọa bắt chuyển tiền")}
-              className="px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:border-sky-300 hover:bg-sky-50 text-slate-700 font-semibold cursor-pointer shrink-0 transition-colors"
+              className="px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:border-blue-300 hover:bg-blue-50 text-slate-700 font-semibold cursor-pointer shrink-0 transition-colors"
             >
-              👮 Công an dọa bắt
+              Công an dọa bắt chuyển tiền
             </button>
             <button
               onClick={() => handleSend("Cập nhật VNeID tải app .apk")}
-              className="px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:border-sky-300 hover:bg-sky-50 text-slate-700 font-semibold cursor-pointer shrink-0 transition-colors"
+              className="px-2.5 py-1 rounded-lg bg-white border border-slate-200 hover:border-blue-300 hover:bg-blue-50 text-slate-700 font-semibold cursor-pointer shrink-0 transition-colors"
             >
-              📱 Cài file .apk
+              Cài app .apk cập nhật VNeID
             </button>
           </div>
 
@@ -244,7 +283,7 @@ export function FloatingCyberGuardBot() {
 
             {isAnalyzing && (
               <div className="flex items-center gap-2 p-3 rounded-2xl bg-white border border-slate-200 text-xs text-sky-700 font-bold max-w-[80%] shadow-2xs animate-pulse">
-                <Sparkles className="w-4 h-4 animate-spin text-sky-600" />
+                <Loader2 className="w-4 h-4 animate-spin text-sky-600" />
                 <span>Đang phân tích dấu hiệu rủi ro & bóc tách thủ đoạn...</span>
               </div>
             )}

@@ -171,12 +171,12 @@ export function analyzeRiskRuleBased(input: string): RiskAnalysisResult {
   // Chuẩn hóa điểm 0 - 100
   const normalizedScore = Math.min(100, Math.max(5, totalScore));
 
-  // Checklist 4 bước hành động khoa học
+  // Checklist 4 bước hành động chuẩn
   const safeVerificationSteps = [
-    "1. DỪNG LẠI: Tuyệt đối không bấm vào link, không chuyển tiền, không đọc mã OTP cho bất kỳ ai.",
-    "2. KIỂM TRA: Soi kỹ số điện thoại, tài khoản người gửi, tên miền trang web có đuôi lạ (.top, .xyz, .cc) hay không.",
-    "3. XÁC MINH: Gọi điện thoại trực tiếp bằng số di động thông thường cho người thân hoặc đến trụ sở cơ quan công an / quầy giao dịch ngân hàng gần nhất.",
-    "4. MỚI HÀNH ĐỘNG: Chỉ xử lý sau khi đã xác thực 100% người nhận là thật bằng mắt thấy tai nghe."
+    "Dừng lại: Tuyệt đối không bấm link, không chuyển tiền, không cung cấp OTP hay mật khẩu cho bất kỳ ai.",
+    "Kiểm tra: Soi kỹ số điện thoại, tài khoản người gửi, tên miền trang web có đuôi bất thường hay không.",
+    "Xác minh: Gọi điện thoại trực tiếp bằng số di động thông thường cho người thân hoặc liên hệ đơn vị cung cấp chính thức.",
+    "Hành động an toàn: Chỉ xử lý sau khi đã kiểm chứng độc lập xác thực thông tin."
   ];
 
   return {

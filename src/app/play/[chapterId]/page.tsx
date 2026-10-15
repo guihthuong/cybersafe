@@ -3,6 +3,7 @@
 import { use, useState, useMemo } from "react";
 import Link from "next/link";
 import { notFound, useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 import { PUZZLE_CHAPTERS, PuzzleChapter } from "@/data/puzzleChapters";
 import { OFFICIAL_QUESTION_BANK } from "@/data/officialQuestionBank";
 import { SCENARIO_Q1_1, SCENARIO_Q1_3, SCENARIO_Q2_2 } from "@/data/phase2Scenarios";
@@ -28,6 +29,7 @@ interface ChapterPageProps {
 export default function ChapterPage({ params }: ChapterPageProps) {
   const { chapterId } = use(params);
   const router = useRouter();
+  const { user, openAuthModal } = useAuth();
 
   // Find corresponding chapter/topic
   const chapter = useMemo(() => {
@@ -127,6 +129,44 @@ export default function ChapterPage({ params }: ChapterPageProps) {
 
   const activeScenario =
     activeModalLevelIndex !== null ? allScenarios[activeModalLevelIndex] : null;
+
+  if (!user) {
+    return (
+      <div className="min-h-[80vh] bg-slate-50 flex items-center justify-center p-4">
+        <div className="max-w-md w-full p-8 rounded-3xl bg-white border-2 border-slate-200 shadow-xl text-center space-y-6">
+          <div className="w-16 h-16 rounded-2xl bg-blue-100 text-blue-700 mx-auto flex items-center justify-center shadow-inner">
+            <Lock className="w-8 h-8" />
+          </div>
+          <div className="space-y-2">
+            <span className="text-xs uppercase font-bold tracking-wider text-blue-600 font-mono">
+              Yêu Cầu Đăng Nhập
+            </span>
+            <h2 className="text-2xl font-black text-slate-900 tracking-tight">
+              Đề Tài: {chapter.title}
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-600 font-medium leading-relaxed">
+              Bạn cần đăng nhập tài khoản bằng SĐT hoặc Email để làm các câu hỏi trong chủ đề này.
+            </p>
+          </div>
+          <div className="space-y-3 pt-2">
+            <button
+              onClick={() => openAuthModal("signin")}
+              className="w-full py-3.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-black text-sm shadow-md transition-all cursor-pointer flex items-center justify-center gap-2"
+            >
+              <Lock className="w-4 h-4" />
+              <span>Đăng Nhập Ngay</span>
+            </button>
+            <Link
+              href="/#demo-quiz"
+              className="block w-full py-3 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs transition-all text-center"
+            >
+              Làm thử 2 câu hỏi Demo ở Trang chủ
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 py-8 px-4 sm:px-6 lg:px-8">

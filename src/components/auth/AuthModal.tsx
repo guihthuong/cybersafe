@@ -1,11 +1,12 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth, AuthTabType } from "@/context/AuthContext";
 import { AVATAR_OPTIONS } from "@/data/avatars";
 import {
   X,
   Mail,
+  Phone,
   Lock,
   User,
   Shield,
@@ -19,6 +20,8 @@ import {
   GraduationCap,
   Heart,
   Compass,
+  KeyRound,
+  Calendar,
 } from "lucide-react";
 
 export function AuthModal() {
@@ -29,12 +32,14 @@ export function AuthModal() {
     closeAuthModal,
     signIn,
     signUp,
+    resetPassword,
   } = useAuth();
 
-  const [email, setEmail] = useState("");
+  const [identifier, setIdentifier] = useState(""); // SĐT hoặc Email
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
+  const [age, setAge] = useState<number | "">("");
   const [targetGroup, setTargetGroup] = useState<"student" | "elder" | "general">("student");
   const [selectedAvatarId, setSelectedAvatarId] = useState("guardian");
   const [showPassword, setShowPassword] = useState(false);
@@ -42,6 +47,23 @@ export function AuthModal() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  // Tự động gợi ý nhóm đối tượng khi người dùng nhập độ tuổi
+  const handleAgeChange = (val: string) => {
+    const num = parseInt(val, 10);
+    if (isNaN(num)) {
+      setAge("");
+      return;
+    }
+    setAge(num);
+    if (num < 18) {
+      setTargetGroup("student");
+    } else if (num >= 55) {
+      setTargetGroup("elder");
+    } else {
+      setTargetGroup("general");
+    }
+  };
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -63,18 +85,38 @@ export function AuthModal() {
 
     try {
       if (authModalTab === "signin") {
-        const res = await signIn(email, password);
+        if (!identifier.trim()) {
+          setErrorMessage("Vui lòng nhập Số điện thoại hoặc Email của bạn.");
+          setIsSubmitting(false);
+          return;
+        }
+        if (!password) {
+          setErrorMessage("Vui lòng nhập mật khẩu.");
+          setIsSubmitting(false);
+          return;
+        }
+        const res = await signIn(identifier, password);
         if (!res.success) {
           setErrorMessage(res.error || "Đăng nhập thất bại.");
         }
-      } else {
+      } else if (authModalTab === "signup") {
+        if (!identifier.trim()) {
+          setErrorMessage("Vui lòng nhập Số điện thoại hoặc Email để làm tên đăng nhập.");
+          setIsSubmitting(false);
+          return;
+        }
         if (!displayName.trim()) {
           setErrorMessage("Vui lòng nhập họ và tên hoặc biệt danh của bạn.");
           setIsSubmitting(false);
           return;
         }
-        if (password.length < 6) {
-          setErrorMessage("Mật khẩu phải có ít nhất 6 ký tự để đảm bảo an toàn.");
+        if (age === "" || Number(age) < 6 || Number(age) > 120) {
+          setErrorMessage("Vui lòng điền độ tuổi hợp lệ (từ 6 đến 120 tuổi) để hệ thống phân tích và tối ưu giao diện.");
+          setIsSubmitting(false);
+          return;
+        }
+        if (password.length < 8) {
+          setErrorMessage("Mật khẩu bảo mật phải có tối thiểu 8 ký tự theo đúng quy chuẩn an toàn.");
           setIsSubmitting(false);
           return;
         }
@@ -85,9 +127,10 @@ export function AuthModal() {
         }
 
         const res = await signUp({
-          email,
+          identifier,
           pass: password,
           displayName,
+          age: Number(age),
           targetGroup,
           avatarId: selectedAvatarId,
         });
@@ -96,6 +139,18 @@ export function AuthModal() {
           setErrorMessage(res.error || "Đăng ký thất bại.");
         } else {
           setSuccessMessage("Đăng ký tài khoản thành công! Đang đăng nhập...");
+        }
+      } else if (authModalTab === "forgot") {
+        if (!identifier.trim()) {
+          setErrorMessage("Vui lòng nhập Số điện thoại hoặc Email đã đăng ký để khôi phục mật khẩu.");
+          setIsSubmitting(false);
+          return;
+        }
+        const res = await resetPassword(identifier);
+        if (res.success) {
+          setSuccessMessage(res.message || "Yêu cầu khôi phục mật khẩu đã được gửi thành công!");
+        } else {
+          setErrorMessage(res.error || "Không thể gửi yêu cầu khôi phục.");
         }
       }
     } finally {
@@ -123,27 +178,29 @@ export function AuthModal() {
 
         {/* Modal Header */}
         <div className="space-y-1.5 text-center sm:text-left pr-8">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-sky-50 border border-sky-200 text-sky-800 text-xs font-bold font-mono uppercase tracking-wider">
-            <Shield className="w-3.5 h-3.5 text-sky-600" />
-            <span>Xác Thực Tài Khoản Độc Lập</span>
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-800 text-xs font-bold font-mono uppercase tracking-wider">
+            <Shield className="w-3.5 h-3.5 text-blue-600" />
+            <span>Nền Tảng Trò Chơi An Toàn Số</span>
           </div>
           <h2 className="text-2xl font-black text-slate-900 tracking-tight">
-            {authModalTab === "signin" ? "Đăng Nhập Tài Khoản" : "Tạo Tài Khoản Mới"}
+            {authModalTab === "signin" && "Đăng Nhập Tài Khoản"}
+            {authModalTab === "signup" && "Đăng Ký Tài Khoản Mới"}
+            {authModalTab === "forgot" && "Khôi Phục Mật Khẩu"}
           </h2>
-          <p className="text-xs sm:text-sm text-slate-600 font-medium">
-            Mỗi tài khoản có một bản đồ tiến trình và hồ sơ rèn luyện độc lập lưu vĩnh viễn trên Supabase Cloud.
+          <p className="text-xs sm:text-sm text-slate-600 font-medium leading-relaxed">
+            {authModalTab === "signin" && "Sử dụng SĐT hoặc Email để đăng nhập vào làm 39 ải thử thách và dùng trợ lý CyberGuardBot."}
+            {authModalTab === "signup" && "Sử dụng SĐT hoặc Email làm tên đăng nhập trực tiếp. Nhập độ tuổi để cá nhân hóa giao diện và theo dõi thang đo năng lực."}
+            {authModalTab === "forgot" && "Nhập SĐT hoặc Email bạn đã đăng ký để nhận mã OTP hoặc đường dẫn đặt lại mật khẩu mới."}
           </p>
         </div>
 
         {/* Tab Toggle */}
-        <div className="grid grid-cols-2 gap-1.5 p-1 rounded-2xl bg-slate-100 border border-slate-200 text-xs font-bold">
+        <div className="grid grid-cols-3 gap-1 p-1 rounded-2xl bg-slate-100 border border-slate-200 text-xs font-bold">
           <button
             type="button"
             onClick={() => {
               setErrorMessage(null);
               setSuccessMessage(null);
-              setPassword("");
-              setConfirmPassword("");
               openAuthModal("signin");
             }}
             className={`py-2 rounded-xl flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
@@ -160,8 +217,6 @@ export function AuthModal() {
             onClick={() => {
               setErrorMessage(null);
               setSuccessMessage(null);
-              setPassword("");
-              setConfirmPassword("");
               openAuthModal("signup");
             }}
             className={`py-2 rounded-xl flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
@@ -172,6 +227,22 @@ export function AuthModal() {
           >
             <Sparkles className="w-3.5 h-3.5" />
             <span>Đăng Ký</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setErrorMessage(null);
+              setSuccessMessage(null);
+              openAuthModal("forgot");
+            }}
+            className={`py-2 rounded-xl flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+              authModalTab === "forgot"
+                ? "bg-white text-slate-900 font-black shadow-xs"
+                : "text-slate-600 hover:text-slate-900"
+            }`}
+          >
+            <KeyRound className="w-3.5 h-3.5" />
+            <span>Quên MK</span>
           </button>
         </div>
 
@@ -184,8 +255,8 @@ export function AuthModal() {
         )}
 
         {successMessage && (
-          <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold flex items-center gap-2.5">
-            <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+          <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold flex items-start gap-2.5">
+            <Check className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
             <span>{successMessage}</span>
           </div>
         )}
@@ -195,7 +266,7 @@ export function AuthModal() {
           {/* Display Name (Only for signup) */}
           {authModalTab === "signup" && (
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-slate-700">Họ và Tên / Biệt Danh</label>
+              <label className="text-xs font-bold text-slate-700">Họ và Tên hoặc Biệt Danh</label>
               <div className="relative">
                 <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <input
@@ -204,55 +275,110 @@ export function AuthModal() {
                   placeholder="Ví dụ: Nguyễn Văn An"
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 rounded-2xl border-2 border-slate-200 focus:border-sky-500 focus:ring-2 focus:ring-sky-200 outline-none text-sm font-semibold transition-all"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-2xl border-2 border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none text-sm font-semibold transition-all"
                 />
               </div>
             </div>
           )}
 
-          {/* Email */}
+          {/* SĐT hoặc Email (Identifier chung cho tất cả các tab) */}
           <div className="space-y-1.5">
-            <label className="text-xs font-bold text-slate-700">Email Đăng Nhập</label>
+            <label className="text-xs font-bold text-slate-700 flex items-center justify-between">
+              <span>Số điện thoại hoặc Email</span>
+              <span className="text-[11px] font-normal text-slate-500">Dùng làm tên đăng nhập</span>
+            </label>
             <div className="relative">
-              <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <div className="absolute left-3.5 top-1/2 -translate-y-1/2 flex items-center gap-1 text-slate-400">
+                <Phone className="w-3.5 h-3.5" />
+                <span className="text-slate-300">/</span>
+                <Mail className="w-3.5 h-3.5" />
+              </div>
               <input
-                type="email"
+                type="text"
                 required
-                placeholder="tennguoidung@gmail.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 rounded-2xl border-2 border-slate-200 focus:border-sky-500 focus:ring-2 focus:ring-sky-200 outline-none text-sm font-semibold transition-all"
+                placeholder="0912345678 hoặc name@example.com"
+                value={identifier}
+                onChange={(e) => setIdentifier(e.target.value)}
+                className="w-full pl-14 pr-4 py-2.5 rounded-2xl border-2 border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none text-sm font-semibold transition-all"
               />
             </div>
           </div>
 
-          {/* Password */}
-          <div className="space-y-1.5">
-            <label className="text-xs font-bold text-slate-700">Mật Khẩu</label>
-            <div className="relative">
-              <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-              <input
-                type={showPassword ? "text" : "password"}
-                required
-                placeholder="Tối thiểu 6 ký tự"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full pl-10 pr-10 py-2.5 rounded-2xl border-2 border-slate-200 focus:border-sky-500 focus:ring-2 focus:ring-sky-200 outline-none text-sm font-semibold transition-all"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
-              >
-                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-              </button>
-            </div>
-          </div>
-
-          {/* Confirm Password (Only for Sign Up) */}
+          {/* Độ tuổi (Bắt buộc khi đăng ký - dùng để phân tích & tùy biến giao diện) */}
           {authModalTab === "signup" && (
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-slate-700">Xác Nhận Mật Khẩu</label>
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-slate-700">Độ tuổi của bạn</label>
+                <span className="text-[11px] text-blue-600 font-semibold">Bắt buộc theo đề tài</span>
+              </div>
+              <div className="relative">
+                <Calendar className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <input
+                  type="number"
+                  min="6"
+                  max="120"
+                  required
+                  placeholder="Ví dụ: 16 (Học sinh) hoặc 65 (Cao tuổi)"
+                  value={age}
+                  onChange={(e) => handleAgeChange(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2.5 rounded-2xl border-2 border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none text-sm font-semibold transition-all"
+                />
+              </div>
+              <p className="text-[11px] text-slate-500 font-medium">
+                Hệ thống dựa vào độ tuổi để phân tích thang đo năng lực số và tự động cấu hình giao diện (cỡ chữ lớn, độ tương phản cao cho người lớn tuổi).
+              </p>
+            </div>
+          )}
+
+          {/* Password (Chỉ cho signin và signup) */}
+          {authModalTab !== "forgot" && (
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-slate-700">Mật Khẩu Bảo Mật</label>
+                {authModalTab === "signin" && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setErrorMessage(null);
+                      setSuccessMessage(null);
+                      openAuthModal("forgot");
+                    }}
+                    className="text-[11px] font-bold text-blue-600 hover:text-blue-800 underline cursor-pointer"
+                  >
+                    Quên mật khẩu?
+                  </button>
+                )}
+              </div>
+              <div className="relative">
+                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <input
+                  type={showPassword ? "text" : "password"}
+                  required
+                  placeholder="Tối thiểu 8 ký tự bảo mật"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full pl-10 pr-10 py-2.5 rounded-2xl border-2 border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none text-sm font-semibold transition-all"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+              {authModalTab === "signup" && (
+                <span className="text-[11px] text-slate-500 font-medium block">
+                  Quy định bảo mật: Mật khẩu tối thiểu 8 ký tự.
+                </span>
+              )}
+            </div>
+          )}
+
+          {/* Confirm Password (Chỉ khi Sign Up) */}
+          {authModalTab === "signup" && (
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-700">Xác Nhận Lại Mật Khẩu</label>
               <div className="relative">
                 <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <input
@@ -261,7 +387,7 @@ export function AuthModal() {
                   placeholder="Nhập lại mật khẩu vừa đặt"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full pl-10 pr-10 py-2.5 rounded-2xl border-2 border-slate-200 focus:border-sky-500 focus:ring-2 focus:ring-sky-200 outline-none text-sm font-semibold transition-all"
+                  className="w-full pl-10 pr-10 py-2.5 rounded-2xl border-2 border-slate-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none text-sm font-semibold transition-all"
                 />
                 <button
                   type="button"
@@ -274,13 +400,13 @@ export function AuthModal() {
             </div>
           )}
 
-          {/* Target Group & Avatar Selection (Only for Sign Up) */}
+          {/* Target Group & Avatar Selection (Chỉ khi Sign Up) */}
           {authModalTab === "signup" && (
             <>
-              {/* Target Group Selection */}
+              {/* Target Group */}
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-slate-700">
-                  Nhóm Đối Tượng Mục Tiêu
+                  Giao diện phù hợp (Tự động cập nhật theo độ tuổi)
                 </label>
                 <div className="grid grid-cols-3 gap-2">
                   <button
@@ -288,12 +414,12 @@ export function AuthModal() {
                     onClick={() => setTargetGroup("student")}
                     className={`p-2.5 rounded-2xl border text-center transition-all cursor-pointer flex flex-col items-center gap-1 ${
                       targetGroup === "student"
-                        ? "bg-sky-50 border-sky-500 text-sky-800 font-black shadow-xs ring-2 ring-sky-200"
+                        ? "bg-blue-50 border-blue-500 text-blue-900 font-black shadow-xs ring-2 ring-blue-200"
                         : "bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100"
                     }`}
                   >
                     <GraduationCap className="w-4 h-4" />
-                    <span className="text-[11px]">Học Sinh / SV</span>
+                    <span className="text-[11px]">Học Sinh / Trẻ Em</span>
                   </button>
 
                   <button
@@ -319,7 +445,7 @@ export function AuthModal() {
                     }`}
                   >
                     <Compass className="w-4 h-4" />
-                    <span className="text-[11px]">Đại Chúng</span>
+                    <span className="text-[11px]">Phổ Thông</span>
                   </button>
                 </div>
               </div>
@@ -337,7 +463,7 @@ export function AuthModal() {
                       onClick={() => setSelectedAvatarId(av.id)}
                       className={`p-2 rounded-2xl border flex flex-col items-center gap-1 transition-all cursor-pointer ${
                         selectedAvatarId === av.id
-                          ? "border-sky-500 bg-sky-50/50 ring-2 ring-sky-300 shadow-xs"
+                          ? "border-blue-500 bg-blue-50/50 ring-2 ring-blue-300 shadow-xs"
                           : "border-slate-200 hover:border-slate-300"
                       }`}
                     >
@@ -360,7 +486,7 @@ export function AuthModal() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full mt-2 py-3 rounded-2xl bg-sky-600 hover:bg-sky-700 active:scale-[0.99] text-white font-black text-sm shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
+            className="w-full mt-2 py-3.5 rounded-2xl bg-blue-600 hover:bg-blue-700 active:scale-[0.99] text-white font-black text-sm shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
           >
             {isSubmitting ? (
               <>
@@ -369,9 +495,9 @@ export function AuthModal() {
               </>
             ) : (
               <span>
-                {authModalTab === "signin"
-                  ? "Đăng Nhập Vào Hệ Thống"
-                  : "Hoàn Tất Đăng Ký Tài Khoản"}
+                {authModalTab === "signin" && "Đăng Nhập Vào Hệ Thống"}
+                {authModalTab === "signup" && "Hoàn Tất Đăng Ký Tài Khoản"}
+                {authModalTab === "forgot" && "Gửi Yêu Cầu Khôi Phục Mật Khẩu"}
               </span>
             )}
           </button>
@@ -379,32 +505,51 @@ export function AuthModal() {
 
         {/* Footer switch prompt */}
         <div className="pt-2 border-t border-slate-100 text-center text-xs text-slate-500 font-medium">
-          {authModalTab === "signin" ? (
+          {authModalTab === "signin" && (
             <p>
-              Chưa có tài khoản riêng?{" "}
+              Chưa có tài khoản?{" "}
               <button
                 type="button"
                 onClick={() => {
                   setErrorMessage(null);
+                  setSuccessMessage(null);
                   openAuthModal("signup");
                 }}
-                className="text-sky-700 hover:text-sky-900 font-bold underline cursor-pointer"
+                className="text-blue-700 hover:text-blue-900 font-bold underline cursor-pointer"
               >
-                Đăng ký tài khoản miễn phí
+                Đăng ký bằng SĐT hoặc Email
               </button>
             </p>
-          ) : (
+          )}
+          {authModalTab === "signup" && (
             <p>
               Đã có tài khoản?{" "}
               <button
                 type="button"
                 onClick={() => {
                   setErrorMessage(null);
+                  setSuccessMessage(null);
                   openAuthModal("signin");
                 }}
-                className="text-sky-700 hover:text-sky-900 font-bold underline cursor-pointer"
+                className="text-blue-700 hover:text-blue-900 font-bold underline cursor-pointer"
               >
                 Đăng nhập ngay
+              </button>
+            </p>
+          )}
+          {authModalTab === "forgot" && (
+            <p>
+              Nhớ mật khẩu rồi?{" "}
+              <button
+                type="button"
+                onClick={() => {
+                  setErrorMessage(null);
+                  setSuccessMessage(null);
+                  openAuthModal("signin");
+                }}
+                className="text-blue-700 hover:text-blue-900 font-bold underline cursor-pointer"
+              >
+                Quay lại đăng nhập
               </button>
             </p>
           )}
