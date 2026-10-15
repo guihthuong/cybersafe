@@ -38,43 +38,41 @@ export function MultipleChoiceQuestion({
   };
 
   return (
-    <div className="flex flex-col gap-5">
-      {/* Question Action Prompt - Trực diện, ngắn gọn, dễ hiểu cho người cao tuổi & trẻ em */}
-      <div className="p-5 sm:p-6 rounded-3xl bg-amber-50/80 border-2 border-amber-300 shadow-xs">
-        <div className="text-xs font-black text-amber-900 uppercase tracking-wider mb-2 flex items-center gap-2">
-          <span className="w-6 h-6 rounded-lg bg-amber-500 text-white flex items-center justify-center font-black text-xs shadow-xs">
-            ?
-          </span>
-          <span>Thao tác bạn cần làm:</span>
+    <div className="flex flex-col gap-4">
+      {/* Question Action Prompt - Trực diện, ngắn gọn, dễ hiểu */}
+      <div className="p-4 sm:p-5 rounded-2xl bg-amber-50/60 border border-amber-200 shadow-2xs space-y-1.5">
+        <div className="text-[11px] font-black text-amber-800 uppercase tracking-wider flex items-center gap-1.5">
+          <HelpCircle className="w-4 h-4 text-amber-600 shrink-0" />
+          <span>Câu hỏi cần xử lý:</span>
         </div>
-        <h3 className="text-lg sm:text-2xl font-black text-slate-900 leading-snug">
+        <h3 className="text-base sm:text-lg font-black text-slate-900 leading-snug">
           {story.questionPrompt}
         </h3>
-        <p className="text-xs sm:text-sm text-slate-600 mt-2 font-medium">
-          👉 Bấm chọn 1 phương án an toàn nhất bên dưới rồi nhấn nút <strong className="text-sky-700 font-bold">Xác Nhận Lựa Chọn</strong>.
+        <p className="text-xs text-slate-500 font-medium">
+          👉 Bấm chọn 1 phương án an toàn bên dưới rồi nhấn nút <strong className="text-blue-700 font-bold">Xác Nhận</strong>.
         </p>
       </div>
 
       {/* Options List - Chunky, High-contrast, Easy-to-tap Buttons */}
-      <div className="space-y-3.5">
+      <div className="space-y-2.5">
         {options.map((opt) => {
           const isSelected = selectedOptionId === opt.id;
           let containerStyle =
-            "bg-white border-2 border-slate-300 border-b-6 border-slate-400 hover:bg-slate-50 hover:border-slate-400 text-slate-900";
+            "bg-white border-2 border-slate-200 border-b-4 border-slate-300 hover:bg-slate-50 hover:border-blue-300 text-slate-900";
 
           if (isSubmitted) {
             if (opt.is_correct) {
               containerStyle =
-                "bg-emerald-50 border-2 border-emerald-500 border-b-6 border-emerald-600 text-emerald-950 font-bold";
+                "bg-emerald-50 border-2 border-emerald-500 border-b-4 border-emerald-600 text-emerald-950 font-bold";
             } else if (isSelected && !opt.is_correct) {
               containerStyle =
-                "bg-rose-50 border-2 border-rose-500 border-b-6 border-rose-600 text-rose-950 font-bold";
+                "bg-rose-50 border-2 border-rose-500 border-b-4 border-rose-600 text-rose-950 font-bold";
             } else {
               containerStyle = "bg-slate-100 border-2 border-slate-200 text-slate-400 opacity-60";
             }
           } else if (isSelected) {
             containerStyle =
-              "bg-sky-50 border-2 border-sky-500 border-b-6 border-sky-600 text-sky-950 font-bold shadow-md";
+              "bg-blue-50 border-2 border-blue-600 border-b-4 border-blue-700 text-blue-950 font-bold shadow-xs";
           }
 
           // Option letter A, B, C...
@@ -86,26 +84,26 @@ export function MultipleChoiceQuestion({
               onClick={() => {
                 if (!isSubmitted) setSelectedOptionId(opt.id);
               }}
-              className={`p-4 sm:p-5 rounded-2xl transition-all cursor-pointer flex flex-col gap-2 ${containerStyle}`}
+              className={`p-3.5 sm:p-4 rounded-2xl transition-all cursor-pointer flex flex-col gap-1.5 ${containerStyle}`}
             >
               <div className="flex items-start justify-between gap-3">
-                <div className="flex items-start gap-3.5 w-full">
+                <div className="flex items-start gap-3 w-full">
                   <div
-                    className={`w-9 h-9 rounded-xl flex items-center justify-center font-black text-base shrink-0 mt-0.5 transition-colors ${
+                    className={`w-7 h-7 rounded-xl flex items-center justify-center font-black text-xs shrink-0 mt-0.5 transition-colors border ${
                       isSelected
-                        ? "bg-sky-500 text-white shadow-xs"
-                        : "bg-slate-200 text-slate-700"
+                        ? "bg-blue-600 text-white border-blue-700 shadow-2xs"
+                        : "bg-slate-100 text-slate-700 border-slate-200"
                     }`}
                   >
                     {isSubmitted && opt.is_correct ? (
-                      <CheckCircle2 className="w-6 h-6 text-emerald-600" />
+                      <CheckCircle2 className="w-5 h-5 text-emerald-600" />
                     ) : isSubmitted && isSelected && !opt.is_correct ? (
-                      <XCircle className="w-6 h-6 text-rose-600" />
+                      <XCircle className="w-5 h-5 text-rose-600" />
                     ) : (
                       letter
                     )}
                   </div>
-                  <span className="text-base sm:text-lg font-bold leading-relaxed pt-0.5">
+                  <span className="text-sm sm:text-base font-bold leading-relaxed pt-0.5">
                     {opt.label}
                   </span>
                 </div>
@@ -114,13 +112,13 @@ export function MultipleChoiceQuestion({
               {/* In-line explanation if submitted */}
               {isSubmitted && (isSelected || opt.is_correct) && (
                 <div
-                  className={`mt-2 pt-2 border-t text-sm sm:text-base leading-relaxed font-semibold ${
+                  className={`mt-2 pt-2 border-t text-xs sm:text-sm leading-relaxed font-medium ${
                     opt.is_correct
                       ? "border-emerald-200 text-emerald-900"
                       : "border-rose-200 text-rose-900"
                   }`}
                 >
-                  <strong className="font-black">Giải thích: </strong>
+                  <strong className="font-bold">Giải thích: </strong>
                   {opt.explanation}
                 </div>
               )}
@@ -130,12 +128,12 @@ export function MultipleChoiceQuestion({
       </div>
 
       {/* Action Toolbar */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-2">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-1">
         <button
           onClick={handleReset}
-          className="px-4 py-3 rounded-2xl bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-sm flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+          className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer border border-slate-200"
         >
-          <RotateCcw className="w-4 h-4" /> Làm lại câu này
+          <RotateCcw className="w-3.5 h-3.5" /> Làm lại câu này
         </button>
 
         {!isSubmitted ? (

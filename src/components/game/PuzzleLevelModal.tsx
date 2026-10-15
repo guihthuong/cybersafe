@@ -70,14 +70,14 @@ export function PuzzleLevelModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-slate-900/60 backdrop-blur-md overflow-y-auto">
-      <div className="relative w-full max-w-5xl rounded-3xl bg-slate-50 border-2 border-slate-300 shadow-2xl p-5 sm:p-8 my-6 flex flex-col gap-6 max-h-[92vh] overflow-y-auto">
-        {/* Top Header Bar - STICKY TOP TO NEVER BE HIDDEN ON SCROLL */}
-        <div className="sticky -top-5 sm:-top-8 -mt-2 -mx-5 sm:-mx-8 px-5 sm:px-8 pt-4 pb-4 bg-slate-50/95 backdrop-blur-md border-b border-slate-200 z-40 flex items-center justify-between gap-4 shadow-xs">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-900/60 backdrop-blur-md overflow-y-auto">
+      <div className="relative w-full max-w-5xl rounded-3xl bg-slate-50 border-2 border-slate-300 shadow-2xl p-4 sm:p-6 my-2 flex flex-col gap-4 max-h-[95vh] overflow-y-auto">
+        {/* Top Header Bar - STICKY TOP */}
+        <div className="sticky -top-4 sm:-top-6 -mt-2 -mx-4 sm:-mx-6 px-4 sm:px-6 pt-3 pb-3 bg-slate-50/95 backdrop-blur-md border-b border-slate-200 z-40 flex items-center justify-between gap-3 shadow-2xs">
           <div className="flex items-center gap-3">
             <button
               onClick={onClose}
-              className="p-2 sm:px-3 sm:py-2 rounded-xl bg-white hover:bg-slate-100 border border-slate-300 text-slate-700 transition-colors cursor-pointer flex items-center gap-1.5 text-xs font-bold"
+              className="p-2 sm:px-3 sm:py-1.5 rounded-xl bg-white hover:bg-slate-100 border border-slate-300 text-slate-700 transition-colors cursor-pointer flex items-center gap-1.5 text-xs font-bold"
             >
               <ArrowLeft className="w-4 h-4" />
               <span className="hidden sm:inline">Trở lại bản đồ</span>
@@ -85,14 +85,14 @@ export function PuzzleLevelModal({
 
             <div>
               <div className="flex items-center gap-2">
-                <span className="px-2.5 py-0.5 rounded-full bg-sky-600 text-white font-mono font-black text-xs">
+                <span className="px-2.5 py-0.5 rounded-full bg-blue-600 text-white font-mono font-black text-xs">
                   ẢI {levelNum} / {totalLevels}
                 </span>
                 <span className="text-xs uppercase font-bold text-slate-500">
                   {scenario.scenario_id}
                 </span>
               </div>
-              <h3 className="text-base sm:text-xl font-black text-slate-900 leading-snug line-clamp-1">
+              <h3 className="text-sm sm:text-lg font-black text-slate-900 leading-snug line-clamp-1">
                 {scenario.category_name_vi}
               </h3>
             </div>
@@ -100,7 +100,7 @@ export function PuzzleLevelModal({
 
           <button
             onClick={onClose}
-            className="p-2 rounded-xl bg-white hover:bg-slate-100 text-slate-500 hover:text-slate-900 transition-colors cursor-pointer border border-slate-200 shrink-0"
+            className="p-1.5 rounded-xl bg-white hover:bg-slate-100 text-slate-500 hover:text-slate-900 transition-colors cursor-pointer border border-slate-200 shrink-0"
             title="Đóng ải (Trở lại)"
           >
             <X className="w-5 h-5" />
@@ -108,12 +108,12 @@ export function PuzzleLevelModal({
         </div>
 
         {/* Challenge Stage Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
           {/* Left: Device Simulator */}
           <div className="lg:col-span-5">
-            <div className="text-xs uppercase font-bold text-slate-500 mb-2 flex items-center gap-1.5">
-              <Shield className="w-4 h-4 text-sky-700" />
-              <span>Màn hình thiết bị thực nghiệm</span>
+            <div className="text-xs uppercase font-bold text-slate-500 mb-1.5 flex items-center gap-1.5">
+              <Shield className="w-3.5 h-3.5 text-blue-600" />
+              <span>Tình huống trên điện thoại</span>
             </div>
             <StimulusSimulator
               stimulus={scenario.stimulus}
@@ -124,9 +124,9 @@ export function PuzzleLevelModal({
 
           {/* Right: Question Interaction */}
           <div className="lg:col-span-7">
-            <div className="text-xs uppercase font-bold text-slate-500 mb-2 flex items-center gap-1.5">
-              <Award className="w-4 h-4 text-amber-600" />
-              <span>Khu vực ra quyết định ứng phó</span>
+            <div className="text-xs uppercase font-bold text-slate-500 mb-1.5 flex items-center gap-1.5">
+              <Award className="w-3.5 h-3.5 text-amber-600" />
+              <span>Lựa chọn cách xử lý của bạn</span>
             </div>
 
             {scenario.question_type === "branching_scenario" && (
